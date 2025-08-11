@@ -51,3 +51,10 @@
 
 <!-- END_DIALECT_EXAMPLES -->
 
+<!-- BEGIN_DIALECT_LINK -->
+
+## Dialect Examples
+
+**Listen in your browser:** 👉 [Dialect Examples (with audio players)](/respin_did_interspeech25/examples.html)
+
+<!-- END_DIALECT_LINK -->
