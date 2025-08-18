@@ -1,506 +1,1030 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vertical Nav + Multi-Box Panel</title>
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'>
+<title>RESPIN DID – Dialect Examples</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
 <style>
-  :root{
-    --bg:#f3f4f6;
-    --stroke:#cfd3dc;
-    --sample-stroke:#183066;
-    --blue-100:#89abef;
-    --blue-200:#6d97ee;
-    --blue-700:#104ec6;
-    --ink:#111;
-    --radius:18px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
-    background:var(--bg); color:var(--ink);
-  }
-  .app{
-    max-width:1100px; margin:28px auto; padding:8px;
-    display:grid; grid-template-columns: 260px 1fr; gap:28px;
-  }
-
-  /* Sidebar */
-  .sidebar{
-    background:#fff; border:1px solid var(--stroke); border-radius:28px; padding:14px;
-  }
-  .nav{
-    display:flex; flex-direction:column; gap:14px; margin:6px 0;
-  }
-  .nav button{
-    all:unset;
-    cursor:pointer;
-    padding:16px 18px;
-    background:#efefef;
-    border:1px solid var(--stroke);
-    color:#2b2b2b;
-    border-radius:14px;
-    font-size:18px;
-    transition:transform .06s ease, background .2s ease, box-shadow .2s ease;
-  }
-  .nav button:hover{ transform:translateY(-1px) }
-  .nav button.active{
-    background:var(--blue-200);
-    color:#fff;
-    /* color-mix is supported by modern browsers; safe to drop if older browsers */
-    box-shadow:0 0 0 3px color-mix(in oklab, var(--blue-200) 30%, white);
-  }
-
-  /* RIGHT PANEL */
-  .panel{
-    background:var(--blue-100);
-    border:1px solid var(--stroke);
-    border-radius:46px;
-    padding:18px;
-    min-height:420px;
-    display:flex;flex-direction:column;gap:18px;
-  }
-  .panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 8px 10px}
-  .panel-title{font-size:20px;font-weight:700;color:#0d2a6a}
-  .pill{background:rgba(255,255,255,.6);border:1px solid color-mix(in oklab,var(--blue-200) 20%,white);border-radius:999px;padding:6px 10px;font-size:12px}
-
-  .dialects{display:flex;flex-direction:column;gap:18px}
-  .dialect{
-    background:var(--blue-700);color:#fff;border-radius:18px;
-    padding:18px 22px;border:1px solid color-mix(in oklab,var(--blue-700) 75%,black);
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    animation:pop .25s ease both;opacity:0;transform:translateY(10px)
-  }
-  .dialect h4{margin:0;font-size:20px;font-weight:700}
-  .dialect .cta{
-    display:flex;align-items:center;gap:14px;white-space:nowrap;
-    font-weight:600;opacity:.95
-  }
-  .dialect .cta button{
-    all:unset;cursor:pointer;color:#fff;padding:6px 10px;border-radius:10px;
-    outline:2px solid rgba(255,255,255,.25);outline-offset:2px;
-  }
-  .dialect .cta button:focus-visible{outline:3px solid #fff}
-  .arrow{opacity:.9}
-  @keyframes pop{to{opacity:1;transform:none}}
-
-  /* MODAL */
-  .modal{
-    position:fixed;inset:0;display:none;place-items:center;padding:28px;
-    background:rgba(3,6,23,.48);backdrop-filter:saturate(1.2) blur(3px);z-index:20;
-  }
-  .modal[aria-hidden="false"]{display:grid}
-  .modal-card{
-    width:min(900px,96vw);max-height:85vh;overflow:auto;background:#fff;border-radius:18px;border:1px solid var(--stroke);
-    box-shadow:0 10px 40px rgba(2,6,23,.35);
-  }
-  .modal-head{
-    padding:14px 18px;border-bottom:1px solid var(--stroke);display:flex;align-items:center;justify-content:space-between;gap:12px
-  }
-  .modal-title{font-size:18px;font-weight:700}
-  .close{
-    all:unset;cursor:pointer;padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);background:#f8fafc
-  }
-  .samples{padding:10px 30px 20px;display:flex;flex-direction:column;gap:14px}
-  .sample{
-    border:1.5px solid var(--sample-stroke);border-radius:14px;padding:12px 14px;background:#e7ecf0;;display:grid;gap:8px
-  }
-  .sample .txt{font-size:25px;color:#111;line-height:1.35}
-  .sample audio{width:100%; height:80px;outline:none;display:block;margin-top:6px}
-  /* If you want a taller row, wrap the audio in a div and add padding there. */
-
-  /* responsive – FIXED to target .app */
-  @media (max-width:880px){
-    .app{grid-template-columns:1fr}
-    .sidebar{order:1}
-    .panel{order:2}
-  }
-</style>
-</head>
-<body>
-
-<div class="app">
-  <!-- Left vertical navbar -->
-  <aside class="sidebar" aria-label="Languages">
-    <nav class="nav" id="nav">
-      <!-- buttons injected by JS -->
-    </nav>
-  </aside>
-
-  <!-- Right panel -->
-  <section class="panel" aria-live="polite">
-    <div class="panel-header">
-      <div class="panel-title" id="panelTitle">Loading…</div>
-      <div class="pill" id="pillCount"></div>
-    </div>
-    <div class="dialects" id="dialects"></div>
-  </section>
-</div>
-
-<!-- Modal -->
-<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal-card">
-    <div class="modal-head">
-      <div class="modal-title" id="modalTitle">Samples</div>
-      <button class="close" id="btnClose" aria-label="Close">✕</button>
-    </div>
-    <div class="samples" id="samples"></div>
-  </div>
-</div>
-
-<script>
-/* -------- Provide demo audio so makeSamples() works -------- */
-const demoAudio = [
-  "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bird_call_-_Common_Blackbird_%28Turdus_merula%29.ogg",
-  "https://upload.wikimedia.org/wikipedia/commons/3/3c/Beep-09.ogg",
-  "https://upload.wikimedia.org/wikipedia/commons/4/45/En-us-hello.ogg",
-  "https://upload.wikimedia.org/wikipedia/commons/5/5f/Beep-Computer.ogg",
-  "https://upload.wikimedia.org/wikipedia/commons/8/8f/Short_Beep.ogg",
-];
-
-/* ========= DATA (replace URLs with your own) ========= */
-const DATA = {
-  Bengali: [
-    { name: "Dialect 1", samples: [
-      { text: "যে কোন পুকুর বা নদীতে চিংড়ি চাষ করা হতিছে", audio: "../samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_AGRI_202149_20833864.mp3" },
-      { text: "দুইহাজার পাঁচ সালে সরকার থেকে পুল্ড ফিন্যান্স ডেভেলপমেন্ট স্কিম শুরু করতিছে", audio: "../samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_BANK_201207_20833942.mp3" },
-      { text: "বিদেশে ব্যবসা করবার লিগে যে সরাসরি টাকা খাটায়", audio: "../samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_BANK_201511_20833846.mp3" },
-      { text: "লোকের নু টাকা লিয়ে সরকার কাজ করতিছে", audio: "../samples/bn/IISc_RESPIN_bn_D1_20181_NA_F_BANK_201232_20921360.mp3" },
-      { text: "আঞ্চলিক সব কাজ কামের লিগে যে গুলা সই করতেছে", audio: "../samples/bn/IISc_RESPIN_bn_D1_20272_721101_F_BANK_201340_20918815.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "এক জমিতে ঘুরে ঘুরে পশু প্রাণীদের চাষ করে", audio: "../samples/bn/IISc_RESPIN_bn_D2_20006_733145_M_AGRI_205270_20788357.mp3" },
-      { text: "জল যখন আমরা এক্সপ্লইট করি তখন জলের অপচয় হয়", audio: "../samples/bn/IISc_RESPIN_bn_D2_20006_733145_M_AGRI_206881_20789785.mp3" },
-      { text: "ফার্মে আমরা পশুপালন করব কিভাবে", audio: "../samples/bn/IISc_RESPIN_bn_D2_20325_733145_F_AGRI_208255_20932711.mp3" },
-      { text: "ব্যাঙ্কের স্টেটমেন্টস গুলো টাকা লেনদেন করার পর পাবো", audio: "../samples/bn/IISc_RESPIN_bn_D2_20792_733145_M_BANK_204594_20646975.mp3" },
-      { text: "বাঙ্ক একাউন্টে সব রকমের কাজ করা হয়", audio: "../samples/bn/IISc_RESPIN_bn_D2_20796_733145_F_BANK_205530_20641822.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "কেন্দ্রীয় সরকার দ্বারা পরিচালিত ব্যাঙ্কগুলোকে সেন্ট্রাল ব্যাঙ্ক বলা হয়", audio: "../samples/bn/IISc_RESPIN_bn_D3_21009_700153_M_BANK_208680_20144710.mp3" },
-      { text: "তেজপাতাকে ইংরেজিতে বে লিফ বলে যেটা ভেষজ হিসেবে ব্যবহার করা হয়", audio: "../samples/bn/IISc_RESPIN_bn_D3_21036_700046_F_AGRI_211208_20031513.mp3" },
-      { text: "সুপারি ফলটিকে ইংরেজিতে বিটেল নাট বলা হয় এবং এটি পানে ব্যবহৃত হয়", audio: "../samples/bn/IISc_RESPIN_bn_D3_21196_700153_F_AGRI_208563_20008211.mp3" },
-      { text: "গবেষণার কাজের জন্য যে তহবিল পাওয়া যায় তাকে স্টাইপেন্ড বলা হয়", audio: "../samples/bn/IISc_RESPIN_bn_D3_21196_700153_F_BANK_208660_20041348.mp3" },
-      { text: "জলজ যে সমস্ত শৈবাল চাষ করা হয় সেটাকে সি উইড ফার্মিং বলে", audio: "../samples/bn/IISc_RESPIN_bn_D3_21204_700039_F_AGRI_210442_20001114.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "টেরেস কাল্টিভেশল বা চাষ পধালত পাহাড়ি ইলাকা গুলাতে ক্যরা হ্যয়", audio: "../samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214142_20267467.mp3" },
-      { text: "যেখালে পশু পালল ক্যরা হ্যয় উয়াদেরকে লিয়মিত ভাবে বিরিড ক্যরাল হ্যয়", audio: "../samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214146_20267426.mp3" },
-      { text: "সারা দুলিয়া জুড়ে মালুষ মাছক লালা ভাবে খায়", audio: "../samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214211_20270919.mp3" },
-      { text: "কল টাকার বিলিয়গ বা ইস্থালাল্তরের মাইধ্যমকে মিডিয়াম অফ এক্সচেঞ্জ ব্যলে", audio: "../samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_BANK_214404_20267445.mp3" },
-      { text: "ৠল আর ইকুইটি মালে হছে দুটা আলেদা রকমের ফিল্যাল্স ব্যবস্থা", audio: "../samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_BANK_215248_20267237.mp3" }
-    ]},
-    { name: "Dialect 5", samples: [
-      { text: "সফ্টউড মানে হসে আক ধরণের কাঠ যেটা সিডার আর সপ্রুস গাছ থুই পাইচুঙ", audio: "../samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_217842_20499996.mp3" },
-      { text: "পুরা দ্যাশোত জুড়ি মেলাগিলা শতাংশর লোক মাছ খাই", audio: "../samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218195_20429112.mp3" },
-      { text: "ফেস্টিলিজের মানে হইলো সার যেটো ভালা করে ফছল ফলনের জন্য ব্যবহার করাং হই", audio: "../samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218382_20506540.mp3" },
-      { text: "বিশেষ করি গছের পাতা ডাল ও ফুলের ক্ষয় দ্যাখিয়া বালাইয়ের চিন করাং যাই", audio: "../samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_220479_20506543.mp3" },
-      { text: "কোনো ব্যাংকোত অনলাইন পেমেন্টের পরিষেবা ভোগ করাত হলে আকটা লগইন আই.ডি ও পাসওয়ার্ড দেওয়াঙ হই", audio: "../samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_BANK_217767_20504640.mp3" }
-    ]}
-],
-  Bhojpuri: [
-    { name: "Dialect 1", samples: [
-      { text: "डायरेक्ट टेक्स हमेसा एक कोनो मनसे के ऊपर लगथे ओखर आवक के ऊपर", audio: "../samples/ch/IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500.mp3" },
-      { text: "छेरी दूद ल मनसे मन दवई बरोबर बउरथे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30034_NA_F_AGRI_300906_30050373.mp3" },
-      { text: "आज के बेरा सब्बो काम ह ऑनलाइन होथे ओकरे सेती मनसे ल बरोबर बने जानकारी घलौ बरोबर होना जरूरी हे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30038_495115_F_BANK_302123_30118713.mp3" },
-      { text: "ए.टी.एम कारड के जरिए मै ह एक दिन मा कतका पइसा निकाल सकथो ओला बतावव", audio: "../samples/ch/IISc_RESPIN_ch_D1_30068_495001_M_BANK_304892_30141249.mp3" },
-      { text: "जेन मनसे मन करा जादा पइसा रथे ओमन ओला बेंक म जमा कर देथे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30071_495119_F_BANK_303200_30010771.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "किसानी के बूता म घलोक किसान ल बनेच जिनिस बिसाए बर परथे", audio: "../samples/ch/IISc_RESPIN_ch_D2_30189_496001_F_AGRI_305475_30126261.mp3" },
-      { text: "फूलगोभी के खेती म एक एकड़ म कतक यूरिया देना ये", audio: "../samples/ch/IISc_RESPIN_ch_D2_30270_496001_F_AGRI_308732_30190524.mp3" },
-      { text: "मोला सामाजिक जोन लाभकारी योजना के बारे म कैसे पता करूं", audio: "../samples/ch/IISc_RESPIN_ch_D2_30276_496001_M_BANK_309480_30072568.mp3" },
-      { text: "बीमा करवाय ले बनेच के फायदा हावय गा", audio: "../samples/ch/IISc_RESPIN_ch_D2_30279_496440_M_BANK_307125_30123122.mp3" },
-      { text: "एग्रीबजार म मशीन हमन म सब्सिडी देय बर सरकार के का योजना हे", audio: "../samples/ch/IISc_RESPIN_ch_D2_30293_496118_F_AGRI_308904_30047606.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "कनकट्टा कीरा एक परकार के फसल काटे वाले कीरा हरय कनकट्टा कीरा छोटे अउ बड़े दुनो अकार के होथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584.mp3" },
-      { text: "का मौसम खराब से फसल म दिक्कत होथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_313437_30372728.mp3" },
-      { text: "डेयरी ले उत्पादित जिनिस ह सब्बो घर म लागबे करथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_310394_30471707.mp3" },
-      { text: "जउन गाय ह दूद देवत रहिथे तउन ह ए बेमारी के आए ले दूद देबर कमती कर देथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311115_30479376.mp3" },
-      { text: "पहिली के समे म पानी के सुबिधा के नइ होय ले किसान मन के फसल ह थोरको नइ होवत रिहिस हवय", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311377_30478130.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "गाँव कती कर किसान मन कर ढेटू मे हमेसा डोरा पाबेच करबे खेत खाएर जात घनी", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165.mp3" },
-      { text: "देओनी नसल के गाय हर आंध्र परदेस में खाल्हे डहर के जिला मन में मिलथे", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_315587_30300830.mp3" },
-      { text: "जेन बड़खा किसान रहें ना जेमन बगरा मातरा में खेती किसानी करें ओमने जग दिखई देहे इस्पेयर हर", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_316107_30297706.mp3" },
-      { text: "दीमक कर कीरा हर खेती ला कौन कसक नुकसान पहुंचाथे", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317660_30303137.mp3" },
-      { text: "खीरा ला कोन महीना मा लगाबो ता ओहार मान बेडिया होही", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317885_30304407.mp3" }
-    ]}
-]
-,
-   Chhattisgarhi: [
-    { name: "Dialect 1", samples: [
-      { text: "डायरेक्ट टेक्स हमेसा एक कोनो मनसे के ऊपर लगथे ओखर आवक के ऊपर", audio: "../samples/ch/IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500.mp3" },
-      { text: "छेरी दूद ल मनसे मन दवई बरोबर बउरथे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30034_NA_F_AGRI_300906_30050373.mp3" },
-      { text: "आज के बेरा सब्बो काम ह ऑनलाइन होथे ओकरे सेती मनसे ल बरोबर बने जानकारी घलौ बरोबर होना जरूरी हे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30038_495115_F_BANK_302123_30118713.mp3" },
-      { text: "ए.टी.एम कारड के जरिए मै ह एक दिन मा कतका पइसा निकाल सकथो ओला बतावव", audio: "../samples/ch/IISc_RESPIN_ch_D1_30068_495001_M_BANK_304892_30141249.mp3" },
-      { text: "जेन मनसे मन करा जादा पइसा रथे ओमन ओला बेंक म जमा कर देथे", audio: "../samples/ch/IISc_RESPIN_ch_D1_30071_495119_F_BANK_303200_30010771.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "एक खाता से दूसर खाता मे हमन यू.पी.आई से कैसे पैसा भेज सकत हन", audio: "../samples/ch/IISc_RESPIN_ch_D2_30182_496001_M_BANK_309792_30082738.mp3" },
-      { text: "किसानी के बूता म घलोक किसान ल बनेच जिनिस बिसाए बर परथे", audio: "../samples/ch/IISc_RESPIN_ch_D2_30189_496001_F_AGRI_305475_30126261.mp3" },
-      { text: "फूलगोभी के खेती म एक एकड़ म कतक यूरिया देना ये", audio: "../samples/ch/IISc_RESPIN_ch_D2_30270_496001_F_AGRI_308732_30190524.mp3" },
-      { text: "मोला सामाजिक जोन लाभकारी योजना के बारे म कैसे पता करूं", audio: "../samples/ch/IISc_RESPIN_ch_D2_30276_496001_M_BANK_309480_30072568.mp3" },
-      { text: "बीमा करवाय ले बनेच के फायदा हावय गा", audio: "../samples/ch/IISc_RESPIN_ch_D2_30279_496440_M_BANK_307125_30123122.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "कनकट्टा कीरा एक परकार के फसल काटे वाले कीरा हरय कनकट्टा कीरा छोटे अउ बड़े दुनो अकार के होथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584.mp3" },
-      { text: "का मौसम खराब से फसल म दिक्कत होथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_313437_30372728.mp3" },
-      { text: "डेयरी ले उत्पादित जिनिस ह सब्बो घर म लागबे करथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_310394_30471707.mp3" },
-      { text: "जउन गाय ह दूद देवत रहिथे तउन ह ए बेमारी के आए ले दूद देबर कमती कर देथे", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311115_30479376.mp3" },
-      { text: "पहिली के समे म पानी के सुबिधा के नइ होय ले किसान मन के फसल ह थोरको नइ होवत रिहिस हवय", audio: "../samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311377_30478130.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "गाँव कती कर किसान मन कर ढेटू मे हमेसा डोरा पाबेच करबे खेत खाएर जात घनी", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165.mp3" },
-      { text: "देओनी नसल के गाय हर आंध्र परदेस में खाल्हे डहर के जिला मन में मिलथे", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_315587_30300830.mp3" },
-      { text: "जेन बड़खा किसान रहें ना जेमन बगरा मातरा में खेती किसानी करें ओमने जग दिखई देहे इस्पेयर हर", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_316107_30297706.mp3" },
-      { text: "दीमक कर कीरा हर खेती ला कौन कसक नुकसान पहुंचाथे", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317660_30303137.mp3" },
-      { text: "खीरा ला कोन महीना मा लगाबो ता ओहार मान बेडिया होही", audio: "../samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317885_30304407.mp3" }
-    ]}
-],
-  Kannada: [
-    { name: "Dialect 1", samples: [
-      { text: "ನಾವು ನಮ್ ಠೇವಣಿ ಖಾತ್ಯಾಗ ಜಗ್ಗಿ ರೊಕ್ಕಹಾಕಾದ್ರಲಾಸಿ ಬಡ್ಡಿ ಜಾಸ್ತಿ ಆಗಿ ನಮಿಗೆ ಲಾಭ ಆತತೆ", audio: "../samples/kn/IISc_RESPIN_kn_D1_50576_583101_M_BANK_522247_50283818.mp3" },
-      { text: "ನಮ್ ಮನೇರಿಗೆಲ್ಲ ಅಸ್ಸಾಂ ಟೀ ಜಗ್ಗಿ ಇಷ್ಟ ಅಸ್ಸಾಂನಾಗ ಜಾಸ್ತಿ ಟೀ ಉತ್ಪಾದನೆ ಆತತೆ", audio: "../samples/kn/IISc_RESPIN_kn_D1_50702_583101_M_AGRI_522158_50412623.mp3" },
-      { text: "ಅಕ್ವಾಫೋನಿಕ್ಸ್ ಸಸ್ಯಗಳು ಬೆಳೆಕ ನೀರಿನಗ ಮೀನಿನ ತ್ಯಾಜ್ಯ ವಸ್ತುಗುಳ್ನ ಬಳಸ್ತಾರ", audio: "../samples/kn/IISc_RESPIN_kn_D1_50728_583101_F_AGRI_521844_50365340.mp3" },
-      { text: "ಮೆಕ್ಕೆಜೋಳದ ಜಿನ್ನ ಖರೇದಿ ಮಾಡೋಕೆ ರೊಕ್ಕ ಎಷ್ಟು ಆಗುತ್ತೆ", audio: "../samples/kn/IISc_RESPIN_kn_D1_50913_583101_F_AGRI_519624_50480558.mp3" },
-      { text: "ಮಂದಿಗೆ ಸಣ್ಣ ಮಟ್ಟದ ರೊಕ್ಕ ಸಾಲ ಕೊಡಕ ಸಹಕಾರ ಬ್ಯಾಂಕ್ ಗಳು ಸಹಾಯ ಮಾಡ್ತಾವ", audio: "../samples/kn/IISc_RESPIN_kn_D1_50927_583121_M_BANK_521822_50507062.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "ಬೆಂಡೆ ಗಿಡ ಬೇಗ ಕಾಯಿ ಬರಲು ಎಂತ ಮಾಡಬೇಕು", audio: "../samples/kn/IISc_RESPIN_kn_D2_50217_574230_M_AGRI_504947_50219071.mp3" },
-      { text: "ಭತ್ತದ ಕುರಲ್ ಬೇಗ ಬರಲು ಎಂತ ಮಾಡಬೇಕು", audio: "../samples/kn/IISc_RESPIN_kn_D2_50990_574150_F_AGRI_504948_50548559.mp3" },
-      { text: "ರಸಗೊಬ್ಬರ ಮಿಶ್ರಣ ಮಾಡಿದರೆ ಮಣ್ಣು ಫಲವತ್ತತೆ ಆಗುತ್ತದಾ", audio: "../samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_AGRI_505349_50493019.mp3" },
-      { text: "ಅಗತ್ಯಕ್ಕಿಂತ ಮತ್ತೆ ಅವಶ್ಯಕತೆ ಇರುದಕ್ಕಿಂತ ಜಾಸ್ತಿ ಹೂಡಿಕೆ ಮಾಡುವ ಅಭ್ಯಾಸ ಲಂಚಕ್ಕೆ ದಾರಿ ಆಗ್ತಿದೆ", audio: "../samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_BANK_509568_50523841.mp3" },
-      { text: "ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಡೇಟಾ ಇಂಟರ್ ಚೇಂಜಿನ ಉಪಘಟಕ ಆಗಿರುವ ಆನ್ಲೈನ್ ಸೇವೆಯು ಇಂಟರ್ನೆಟ್ ಆಧಾರಿತ ಶಾಪಿಂಗ್ ಮತ್ತೆ ಬ್ಯಾಂಕಿಂಗ್ ಆಗಿದೆ", audio: "../samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_BANK_523673_50523235.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "ಮಂಜುಗಡ್ಡೆ ಘನ ರೂಪದಾಗ ಇರತತಿ ಇದರ ಸಾಂದ್ರತೆನು ಕಡಮಿ", audio: "../samples/kn/IISc_RESPIN_kn_D3_50416_580002_M_AGRI_518073_50316807.mp3" },
-      { text: "ಬೆಂಡೆಗಿಡ ಹತ್ತಿ ಬೆಳಿಯೋ ಹವೆ ಮತ್ತು ಮಣ್ಣಿನ್ಯಾಗ ಚೊಲೋ ಬೆಳಿತದ ಎಳೆ ಬೆಂಡೆ ಕಾಯಾಗ ಲೋಳೆಯಂತ ವಸ್ತುಇರ್ತೇತಿ", audio: "../samples/kn/IISc_RESPIN_kn_D3_50447_580001_M_AGRI_517162_50308925.mp3" },
-      { text: "ಒಂದ್ ಚಿಟ್ಟಿ ಭತ್ತ ಎಷ್ಟ್ ಕಿಲೋಗ್ರಾಂ ಭತ್ತಕ್ಕ ಸಮ ಆಕ್ಕೆತಿ", audio: "../samples/kn/IISc_RESPIN_kn_D3_50468_580004_M_AGRI_515027_50450643.mp3" },
-      { text: "ಹೂಡ್ಕಿಮಾಡಿದ್ದ ಬಾಂಡಿನ್ ಬಡ್ಡಿ ವಮ್ಮಿಂದ್ವಮ್ಮಿಗ್ಲೆ ಕೆಳಗಿಳಿತಂದ್ರ ಬಡ್ಡಿ ದರದ ಅಪಾಯಾ ಆಕ್ಕೇತಿ", audio: "../samples/kn/IISc_RESPIN_kn_D3_50493_580001_M_BANK_516469_50344610.mp3" },
-      { text: "ಆಡುಗಳನ್ನ ಅದರ ಉಣ್ಣಿ ಮತ್ತ ಮಾಂಸಕ್ಕಾಗಿನು ಸಾಕತಾರ", audio: "../samples/kn/IISc_RESPIN_kn_D3_51124_580007_F_AGRI_517937_50504221.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "ಬೆಳಿಗೊಳಿಗ್ ಜಾಸ್ತಿ ನೀರ್ ಹಾಕಿದ್ರಿನ್ದ ಅಥವಾ ಜೋರ್ ಮಳಿ ಆಗ್ತದ್ರಿನ್ದ ಬೆಳಿದ್ ಎಲಿ ಮತ್ ಹೂವಾ ಬಾಡ್ಬಹುದ್", audio: "../samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_AGRI_510201_50684027.mp3" },
-      { text: "ಬ್ರಿಂಜಲ್ ಅಂದುರ್ ಬದನೆ ಕಾಯಿ ಪಲ್ಯ ಅದಾ ಇವು ಭಾರತ ಸಿಂಗಪೂರ್ ಮಲೇಷ್ಯಾ ಮತ್ತ ದಕ್ಷಿಣ ಆಫ್ರಿಕಾ ದೇಶಗೊಳ್ದಾಗ್ ಬೆಳಿತಾರ್", audio: "../samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_AGRI_524367_50695364.mp3" },
-      { text: "ನಾವ್ ಮನಿ ಗಿರ್ವಿಗ ಕೊಟ್ಟೂರ ನಮೂಗ ಭಾಳ ಫೈದಾ ಆತ್ತುದ ಅಂತ್ ನಮ್ ದೋಸ್ತ ಅಂದಾನ್", audio: "../samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511110_50693893.mp3" },
-      { text: "ಸ್ಟಾಕ್ ಅಂದುರ್ ಒಂದ್ ಟೈಪ್ ಕಂಪನಿನಾಗ್ ರೊಕ್ಕಾ ಹಾಕ್ತಿವ್ ಅಲ್ಲಾ ಅದ್ದುಕ ಸ್ಟಾಕ್ ಅಂತಾರ್", audio: "../samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511214_50693926.mp3" },
-      { text: "ಮೋರ್ಟ್ಗೆಜ್ ಲೋನ್ ಅಂದುರ್ ಒಂದ್ ಟೈಪ್ ಸಾಲಾ ಅಂತ್ ಅರ್ಥಾ", audio: "../samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511377_50672037.mp3" }
-    ]},
-    { name: "Dialect 5", samples: [
-      { text: "ಹೆಚ್ಚು ಜನರಿಂದ ಬಂಡವಾಳವನ್ನು ಸಂಗ್ರಹಿಸುವುದನ್ನೇ ಕ್ರೌಡಿಂಗ್ ಫಂಡ್ ಅಂತರೆ", audio: "../samples/kn/IISc_RESPIN_kn_D5_50007_571103_M_BANK_501294_50034311.mp3" },
-      { text: "ಪಿ.ಎಂ.ಎಫ್.ಬಿ.ವೈ ಪ್ರಧಾನ್ ಮಂತ್ರಿ ಫಸಲ್ ಭೀಮ ಯೋಜನೆ ಎಂದರೇನು", audio: "../samples/kn/IISc_RESPIN_kn_D5_50015_563146_M_BANK_504411_50033041.mp3" },
-      { text: "ಮನೆ ಕಟ್ಟಲು ಪ್ಲೈವುಡ್ ಸೀಟ್ ಗಳಿಗಾಗಿ ದಿಮ್ಮಿಗಳನ್ನು ಬಳ್ಸತ್ತರೆ", audio: "../samples/kn/IISc_RESPIN_kn_D5_50040_570001_M_AGRI_500038_50015063.mp3" },
-      { text: "ರೈತರು ಬೆಳೆ ವಿಮೆ ಪಡೆಯಲು ಕೃಷಿ ಇಲಾಖೆಯಲ್ಲಿ ನೊಂದಾಯಿಸಬೇಕೇ", audio: "../samples/kn/IISc_RESPIN_kn_D5_50058_570001_M_AGRI_504017_50011307.mp3" },
-      { text: "ಮೇಕೆಯ ಮುನ್ನೂರಕ್ಕಿಂತ ಹೆಚ್ಚು ತಳಿಗಳಿದ್ದು ಹೆಣ್ಣು ಮೇಕೆಯನ್ನು ನಾನೀಸ್ ಎಂದೂ ಗಂಡು ಮೇಕೆಯನ್ನು ಬಕ್ ಅಂತ ಕರೀತಾರೆ", audio: "../samples/kn/IISc_RESPIN_kn_D5_50112_560076_F_AGRI_502228_50041502.mp3" }
-    ]}
-],
-  Magahi: [
-    { name: "Dialect 1", samples: [
-      { text: "अपने धनमा कैसे कटाई करबा हखिन", audio: "../samples/mg/IISc_RESPIN_mg_D1_60025_823311_M_AGRI_604905_60018419.mp3" },
-      { text: "पहले समय के सिक्के काफी बड़े आकार के होवअ हलइ", audio: "../samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_600626_60049508.mp3" },
-      { text: "मोती कईक रंग के होवऽ हइ", audio: "../samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_601585_60038100.mp3" },
-      { text: "फेरोमैन ट्रैप का है और कैसे होब हइ", audio: "../samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_604823_60050349.mp3" },
-      { text: "हार्वेस्टर मतलब का होब हइ", audio: "../samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_605373_60050197.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "वित्तीय सेवाएं से लोन लेवे के खातिर कितना की रेट पर मिलता सके ला", audio: "../samples/mg/IISc_RESPIN_mg_D2_60118_800020_M_BANK_611265_60420881.mp3" },
-      { text: "रहुआ हमरा के बताइए ऑनलाइन बैलेंस जानकारी के लिए आधार कार्ड जरूरी होला", audio: "../samples/mg/IISc_RESPIN_mg_D2_60118_800020_M_BANK_611596_60420443.mp3" },
-      { text: "रहुआ बताइए सामाजिक योजना के लाभ लेने के लिए हमें बैंक अकाउंट खोलना अनिवार्य होला", audio: "../samples/mg/IISc_RESPIN_mg_D2_60163_811311_M_BANK_611254_60020692.mp3" },
-      { text: "विदेशी मुद्रा बाजार के वित्तीय संस्थान के माध्यम से काम करो हय", audio: "../samples/mg/IISc_RESPIN_mg_D2_60164_811107_M_BANK_610215_60388244.mp3" },
-      { text: "बीमा खातिर क्या क्या करना पड़ सकता है", audio: "../samples/mg/IISc_RESPIN_mg_D2_60164_811107_M_BANK_611650_60389214.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "अमितब्बा के घर में मधुमक्खियन के झुंड हई", audio: "../samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_614326_60090994.mp3" },
-      { text: "जैविक खाद के इस्तेमाल अब हर किसनवन अपन अपन स्तर पर कररे लग लय", audio: "../samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615273_60090459.mp3" },
-      { text: "कीटनाशक दवा के प्रयोग फसल पर छिड़क के कइल जा सका हई", audio: "../samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615395_60090960.mp3" },
-      { text: "बासमती चावल के बीज सबसे अच्छा कोन होइ छई", audio: "../samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_616351_60092112.mp3" },
-      { text: "कम समय के ई.एम.आई पर इंस्टॉलमेंट राशि बेशी देबेके होइ छइ", audio: "../samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_BANK_613933_60091123.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "जब स दादाजी ओट्स खा छ वहार बी.पी ठीक छ", audio: "../samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_619660_60119073.mp3" },
-      { text: "गहरा भूरा रंगेर चना भारतत सर्वाधिक इस्तमाल कराल जा छेक", audio: "../samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620503_60119108.mp3" },
-      { text: "कृषित पौधार उत्पादन आर इस्तमालक विज्ञान आर प्रौद्योगिकिक कृषि विज्ञान कहाल जा छेक", audio: "../samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620550_60119084.mp3" },
-      { text: "बदलते मौसम से किसानोक फसलेर सुरक्षा कुंसम करवा लगे", audio: "../samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621814_60125378.mp3" },
-      { text: "कीड़ा कुन कुन किस्मेर होचए", audio: "../samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621964_60126974.mp3" }
-    ]}
-],
-  Marathi: [
-    { name: "Dialect 1", samples: [
-      { text: "बोकाड पिल्लाक जलाम दिवक चार ते सा म्हयन्यात तयार जाता", audio: "../samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708420_70705170.mp3" },
-      { text: "सगळ्या प्रकारच्या मातयेचो कस सारखो नसता", audio: "../samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708535_70705213.mp3" },
-      { text: "भारतात आठशे सत्तर प्रकारचे गोड्या पाण्यातले माशे आढळतत", audio: "../samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_710366_70705405.mp3" },
-      { text: "खरीप पिकाची कापणी खयच्या महिन्यात करतत", audio: "../samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711375_70743552.mp3" },
-      { text: "इलेक्ट्रॉनिक वजनकाट्यात माप मारुक येता काय", audio: "../samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711616_70743550.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "आलू बुखारनी शेती भारत ना डोंगराय भाग मान करतस", audio: "../samples/mr/IISc_RESPIN_mr_D2_70339_422101_M_AGRI_712726_70508199.mp3" },
-      { text: "राजू घरगुती ग्रीनहाऊसमा चांगला काच वापरतस समजना का", audio: "../samples/mr/IISc_RESPIN_mr_D2_70371_422008_F_AGRI_713887_70464820.mp3" },
-      { text: "जनावरस करता फार्म पशु कल्याण परिषद बनाडेल शे", audio: "../samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_712810_71175361.mp3" },
-      { text: "पशु खत हाई पैसा देणारं उत्पादन शे", audio: "../samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714332_71173670.mp3" },
-      { text: "सेंद्रीय शेतीमा परंपरागत शेतीना तुलनामा कमी उत्पादन येस", audio: "../samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714525_71180137.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "एन.बी.एफ.सी या बँकांप्रमाणेच कार्य करतात मग बँक व एन.बी.एफ.सी मध्ये काय फरक आहे", audio: "../samples/mr/IISc_RESPIN_mr_D3_70029_411041_F_BANK_700852_70020893.mp3" },
-      { text: "गोल्ड बॉण्डसाठी कसा अर्ज करायचा", audio: "../samples/mr/IISc_RESPIN_mr_D3_70030_NA_F_BANK_701088_70008892.mp3" },
-      { text: "या अर्जाची फी किती आहे", audio: "../samples/mr/IISc_RESPIN_mr_D3_70046_411037_F_BANK_706269_70018371.mp3" },
-      { text: "आपण आपला फास्ट टॅग रिचार्ज केला आहे का", audio: "../samples/mr/IISc_RESPIN_mr_D3_70062_NA_F_BANK_701498_70012116.mp3" },
-      { text: "माझ्या कंपनीचे उत्पादन चांगले राहण्यासाठी मी काय उपाय केले पाहिजे", audio: "../samples/mr/IISc_RESPIN_mr_D3_70064_NA_F_AGRI_700602_70002343.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "मले कमी खर्चामंदी संत्र्याची शेती कशी करता येईन", audio: "../samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_AGRI_723167_70388224.mp3" },
-      { text: "माह्या खात्यातून हर महिन्याले कर्जाचे कितीक पैसे कटन", audio: "../samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_BANK_723836_70388100.mp3" },
-      { text: "मोबाईलनं मले बिम्याचे हप्ते भरता येईन का", audio: "../samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_BANK_723875_70379918.mp3" },
-      { text: "खातं काढताना मले किती पैसा भरा लागन", audio: "../samples/mr/IISc_RESPIN_mr_D4_70135_441304_M_BANK_723762_70326282.mp3" },
-      { text: "मले बँकेतून कितीक वर्षासाठी कर्ज भेटन", audio: "../samples/mr/IISc_RESPIN_mr_D4_70135_441304_M_BANK_723825_70327132.mp3" }
-    ]}
-],
-  Maithili: [
-    { name: "Dialect 1", samples: [
-      { text: "अरेबिक जैस्मिनक मारिते रास नाम छै", audio: "../samples/mt/IISc_RESPIN_mt_D1_80007_852201_M_AGRI_801850_80009533.mp3" },
-      { text: "कदीमाक बीया खेला सँ डाइट्री फायदा भेटै छै आ इम्युन सिस्टम सेहो बढ़य छै", audio: "../samples/mt/IISc_RESPIN_mt_D1_80007_852201_M_AGRI_802815_80035487.mp3" },
-      { text: "वित्तीय डेटा बेचिकए गोलुआ मारिते रास पाय कमा रहल छै", audio: "../samples/mt/IISc_RESPIN_mt_D1_80225_852201_M_BANK_801623_80220846.mp3" },
-      { text: "यस बैंक आब तीस प्रतिशत साझेदारी संगे स्टेट बैंक केर एसोसिएट बैंक भए गेल छै", audio: "../samples/mt/IISc_RESPIN_mt_D1_80311_852124_M_BANK_803988_80361867.mp3" },
-      { text: "हरबरी बला चेकबुक पर दस पात लेल पचास टका संग जी.एस.टी लगै छै", audio: "../samples/mt/IISc_RESPIN_mt_D1_80900_852124_F_BANK_804204_80560932.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "यांत्रिक ट्री शेकर बादाम पेकान सन फल कें काटे मे उपयोग कैल जाइ छै", audio: "../samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_AGRI_810783_80258549.mp3" },
-      { text: "भारत मे आय केर स्वैच्छिक खुलासा योजना एकटा अपारंपरिक पर सफल योजना रहै", audio: "../samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_BANK_808350_80258564.mp3" },
-      { text: "मामूली लाभ लेल विभिन्न बाजार मे एक्के संपत्तिक खरीद बिक्री आर्बिट्रेज छियै", audio: "../samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_BANK_809319_80254168.mp3" },
-      { text: "पपीता के खेती करे के लेल कोन परभेद सब निक होयत अछि", audio: "../samples/mt/IISc_RESPIN_mt_D2_80500_852113_F_AGRI_811418_80140277.mp3" },
-      { text: "तिलहन फसल लेल सुर्यमुखी के फुल के बड़ा होय लेल कोन खाद चाही", audio: "../samples/mt/IISc_RESPIN_mt_D2_80511_852113_F_AGRI_811377_80020490.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "महाशिवरात्रि पूजा में बेर फलक उपयोग कयल जाइत अछि", audio: "../samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812507_80032648.mp3" },
-      { text: "कस्तूरा जीवक लेल विशिष्ठ रूप सॅ खेती कयल जाइत अछि", audio: "../samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812818_80032630.mp3" },
-      { text: "खादक उपयोग बहुत ध्यानपूर्वक कयल जाइत अछि", audio: "../samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_813955_80037024.mp3" },
-      { text: "तूर के कपड़ा उद्योग में बहुत महत्वपूर्ण स्थान अछि", audio: "../samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814052_80017394.mp3" },
-      { text: "शस्य के कीटनाशकक लेल कृषक के ऋण लिअ पड़लैन", audio: "../samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814153_80042336.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "कुछो लकड़ी हल्का कुछो भारी आरु कुछो कमजोर होय छै", audio: "../samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_822462_80429975.mp3" },
-      { text: "कवचधारी नाशक रो प्रयोग से किसानो के फैदा होलै", audio: "../samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_823832_80429892.mp3" },
-      { text: "दोमत मिट्टी के फ़सल केना लगैलो जाय", audio: "../samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824571_80430860.mp3" },
-      { text: "धान के सुरक्षित भंडारण वास्ते व्यवथा के जानकारी कहाँ मिलतै", audio: "../samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824833_80430892.mp3" },
-      { text: "एकरो सुविधा लै के लेली नेटवर्क आरु मोबाइल आकि कम्प्यूटर चाहियो", audio: "../samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_BANK_820306_80430515.mp3" }
-    ]}
-],
-  Telugu: [
-    { name: "Dialect 1", samples: [
-      { text: "పండ్ల పెంపకం అనేది ప్రత్యేక వ్యవసాయ శాఖగా రూపుదిద్దుకున్నది", audio: "../samples/te/IISc_RESPIN_te_D1_90606_522005_M_AGRI_902940_90099837.mp3" },
-      { text: "నా బ్యాంక్ ఖాతాకి నా యొక్క ఆధార్ నంబర్ లింక్ చెయ్యండి", audio: "../samples/te/IISc_RESPIN_te_D1_90606_522005_M_BANK_904558_90101722.mp3" },
-      { text: "నా యొక్క కుమారునికి విదేశాల చదువుకు విద్యా ఋణం పొందవచ్చునా", audio: "../samples/te/IISc_RESPIN_te_D1_90618_522001_F_BANK_904491_90139093.mp3" },
-      { text: "క్రెడిట్ కార్డ్ పై బాకీ ఉన్న బ్యాలెన్స్ తదుపరి నెల బిల్లుకు జోడించబడుతుంది", audio: "../samples/te/IISc_RESPIN_te_D1_90827_522001_M_BANK_902819_90164052.mp3" },
-      { text: "మా ఇంట్లో మేము చిన్నప్పుడు చదువుకునేటప్పుడు చాలా పెద్ద కరివేపాకు చెట్టు ఉండేది", audio: "../samples/te/IISc_RESPIN_te_D1_90830_522002_M_AGRI_903046_90154812.mp3" }
-    ]},
-    { name: "Dialect 2", samples: [
-      { text: "మామూలుగా అప్పు కట్టేదానికి ఎన్ని కంతులుగా ఉంటాయి", audio: "../samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_909593_90317885.mp3" },
-      { text: "ఇన్సూరెన్సు అంటే ఏమి దాని ఉపయోగాలు సెప్పండి", audio: "../samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_910023_90317668.mp3" },
-      { text: "మేము అకౌంట్ బ్యాలెన్స్ ఎట్లా తెల్సుకోవాలి", audio: "../samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_910138_90317861.mp3" },
-      { text: "వరి పైరు ని నాటేకి మంచి టాక్టర్ ఏది రేటు ఎంత", audio: "../samples/te/IISc_RESPIN_te_D2_90201_517325_M_AGRI_909241_90373155.mp3" },
-      { text: "నా పత్తి మంచిగా ఉందా అని ఎట్లా పరీక్షించేది", audio: "../samples/te/IISc_RESPIN_te_D2_90201_517325_M_AGRI_909400_90373455.mp3" }
-    ]},
-    { name: "Dialect 3", samples: [
-      { text: "అయితే రోలర్ అనేది భూమిని చదును సేయటానికి ఉపయోగించే యంత్రంగా గుర్తించారు", audio: "../samples/te/IISc_RESPIN_te_D3_90559_508001_F_AGRI_917237_90423526.mp3" },
-      { text: "మంచి రాబడులకు ఎట్లాంటి పెట్టుబడులు పెట్టాలే", audio: "../samples/te/IISc_RESPIN_te_D3_90559_508001_F_BANK_917021_90421287.mp3" },
-      { text: "చూడు యాదమ్మ మనం పొలం సక్కగా దున్ని విత్తనాలు నాటుకోవాలి", audio: "../samples/te/IISc_RESPIN_te_D3_91380_508210_M_AGRI_917066_90593290.mp3" },
-      { text: "రంగయ్య మొసళ్ల జనాభాను జాగ్రత్తగా పరిశీలించి ప్రత్యేక పెంపకం దారులు ఈ మాంసాన్ని తయారు సేసారు", audio: "../samples/te/IISc_RESPIN_te_D3_91380_508210_M_AGRI_917395_90595849.mp3" },
-      { text: "రంగయ్య బియ్యం పండించుటలో మన దేసం రెండో స్థానంలో ఉందంట", audio: "../samples/te/IISc_RESPIN_te_D3_91385_505404_F_AGRI_918852_90911285.mp3" }
-    ]},
-    { name: "Dialect 4", samples: [
-      { text: "సెనగ పంటకి ఎన్ని రోజులకి నీటినీ అందించాలి", audio: "../samples/te/IISc_RESPIN_te_D4_90367_530013_F_AGRI_910485_90335614.mp3" },
-      { text: "కొబ్బరి మొక్కలను నాటి అనేకమందికి ఉపాధి కల్పించవచ్చు", audio: "../samples/te/IISc_RESPIN_te_D4_90367_530013_F_AGRI_914017_90355515.mp3" },
-      { text: "నా దేశం లేని వారికి మనం డబ్బు ఎలా పంపగలం", audio: "../samples/te/IISc_RESPIN_te_D4_90367_530013_F_BANK_911377_90340919.mp3" },
-      { text: "ఇసుక నేలలో పసుపు పంట వెయ్యొచ్చా", audio: "../samples/te/IISc_RESPIN_te_D4_90391_530051_M_AGRI_910790_90333203.mp3" },
-      { text: "ఆవుల అలానే గేదెల పెంపకం ఎలా వాటి దాణ అలానే జబ్బుల నివారణ ఎలా", audio: "../samples/te/IISc_RESPIN_te_D4_90391_530051_M_AGRI_910956_90333007.mp3" }
-    ]}
-],
-};
-function makeSamples(label){
-  return [
-    {text:`Sample 1 text for ${label}.`, audio: demoAudio[0]},
-    {text:`Sample 2 text for ${label}.`, audio: demoAudio[1]},
-    {text:`Sample 3 text for ${label}.`, audio: demoAudio[2]},
-    {text:`Sample 4 text for ${label}.`, audio: demoAudio[3]},
-    {text:`Sample 5 text for ${label}.`, audio: demoAudio[4]},
-  ];
-}
-
-/* ========= Build LEFT NAV ========= */
-const nav = document.getElementById("nav");
-const panelTitle = document.getElementById("panelTitle");
-const pillCount = document.getElementById("pillCount");
-const dialectsEl = document.getElementById("dialects");
-
-const languages = Object.keys(DATA);
-languages.forEach((lang, i) => {
-  const b = document.createElement("button");
-  b.textContent = lang;
-  b.className = i===0 ? "active" : "";
-  b.addEventListener("click", () => setLanguage(lang, b));
-  nav.appendChild(b);
-});
-
-/* ========= Render RIGHT PANEL ========= */
-function setLanguage(lang, btn){
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-
-  const list = DATA[lang] || [];
-  panelTitle.textContent = lang;
-  pillCount.textContent = `${list.length} Dialect${list.length===1?"":"s"}`;
-
-  dialectsEl.replaceChildren();
-  list.forEach((d, i) => {
-    const row = document.createElement("div");
-    row.className = "dialect";
-    row.style.animationDelay = `${i*60}ms`;
-    row.innerHTML = `
-      <h4>${d.name}</h4>
-      <div class="cta">
-        <button type="button" aria-label="Open samples for ${lang} – ${d.name}">Click for Samples</button>
-        
-      </div>
-    `;
-    row.querySelector("button").addEventListener("click", () => openModal(lang, d));
-    dialectsEl.appendChild(row);
-  });
-}
-setLanguage(languages[0], nav.querySelector("button"));
-
-/* ========= MODAL logic ========= */
-const modal = document.getElementById("modal");
-const modalTitleEl = document.getElementById("modalTitle");
-const samplesBox = document.getElementById("samples");
-const btnClose = document.getElementById("btnClose");
-
-function openModal(lang, dialect){
-  modalTitleEl.textContent = `${lang} — ${dialect.name}`;
-  samplesBox.replaceChildren();
-
-  dialect.samples.forEach((s, idx) => {
-    const item = document.createElement("div");
-    item.className = "sample";
-    item.innerHTML = `
-      <div class="txt"><strong>Sample ${idx+1}:</strong> ${s.text}</div>
-      <audio controls preload="none" src="${s.audio}"></audio>
-    `;
-    samplesBox.appendChild(item);
-  });
-
-  modal.setAttribute("aria-hidden","false");
-  document.body.style.overflow = "hidden";
-  btnClose.focus();
-}
-function closeModal(){
-  modal.setAttribute("aria-hidden","true");
-  document.body.style.overflow = "";
-  samplesBox.querySelectorAll("audio").forEach(a=>{ a.pause(); a.currentTime = 0; });
-}
-btnClose.addEventListener("click", closeModal);
-modal.addEventListener("click", e => { if(e.target === modal) closeModal(); });
-window.addEventListener("keydown", e => { if(e.key === "Escape" && modal.getAttribute("aria-hidden")==="false") closeModal(); });
-</script>
-</body>
-</html>
+body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px}
+h1{margin:0 0 12px} h2{margin-top:28px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ddd;padding:8px;vertical-align:top}
+th{background:#f6f8fa;text-align:left}
+audio{width:260px;max-width:100%}
+code{background:#f6f8fa;padding:2px 4px;border-radius:4px}
+a{color:#0969da;text-decoration:none} a:hover{text-decoration:underline}
+</style></head><body>
+<h1>RESPIN DID – Dialect Examples</h1>
+<p>Short web-playable clips (MP3, 16 kHz mono). Use headphones.</p>
+<h2>bh</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bh_D1_10761_274001_M_BANK_101155_10322027</code></td>
+<td>क्रेडिट सलाह तरह के सलाह लोग अपनी उधार के कम करे खातिर करत बाटे</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D1_10761_274001_M_BANK_101155_10322027.mp3?v=1755211163'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bh_D1_10775_224123_M_BANK_101927_10306481</code></td>
+<td>एमे फर्जी कागज से लोग दूसरा के जमीन के गिरवी रख देत हवे</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D1_10775_224123_M_BANK_101927_10306481.mp3?v=1755211163'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bh_D1_10777_NA_F_BANK_101719_10316105</code></td>
+<td>पईसा से तू कवनो भी सामान इहवा तकले की आदमी भी खरीद सकेला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D1_10777_NA_F_BANK_101719_10316105.mp3?v=1755211163'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bh_D1_10814_845437_M_AGRI_105275_10133612</code></td>
+<td>सही फसल चक्र अपना के भी माटी के निक रखल जा सकत हवे</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D1_10814_845437_M_AGRI_105275_10133612.mp3?v=1755211163'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bh_D1_10828_845401_M_BANK_100156_10042312</code></td>
+<td>वेतन खाता में बदलवावे खातिर तोहके अपनी नोकरी के बारे में सब जानकारी देवे के पड़त हवे</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D1_10828_845401_M_BANK_100156_10042312.mp3?v=1755211163'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_112197_10686840</code></td>
+<td>पर्माकल्चर खेती एक स्थाई खेती के रूप हौ</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_112197_10686840.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_113694_10682345</code></td>
+<td>गाय भैस के गोबर क खाद बनला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_113694_10682345.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115183_10686904</code></td>
+<td>हरा सब्जी का खेती कर खातिर कौन मिट्टी बढ़ियां होखे ला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115183_10686904.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115286_10686877</code></td>
+<td>धान क बिज कौने महीना में डाले के चाही</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115286_10686877.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115414_10687020</code></td>
+<td>धान के कांटे खातिर सबसे बढ़ियां तरीका कवन हव</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_115414_10687020.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bh_D3_11137_841215_F_AGRI_116334_10883021</code></td>
+<td>हम कही पढ़ले रहनी की ज्यादा बांस के खेती गर्म जगह पर होखेला जाहवा गर्मी ज्यादा होखेला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D3_11137_841215_F_AGRI_116334_10883021.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bh_D3_11202_841215_M_AGRI_122788_10576291</code></td>
+<td>किटाणु जनित रोग का होला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D3_11202_841215_M_AGRI_122788_10576291.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bh_D3_11223_841215_M_BANK_119601_10013968</code></td>
+<td>प्रोविडेंट फंड जे होला ई एक लेखा के पेंशन फंड ह</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D3_11223_841215_M_BANK_119601_10013968.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bh_D3_11225_841215_M_BANK_117077_10032974</code></td>
+<td>इ बीमा कंपनी घर के भी बीमा करावेला एकरा के संपत्ति बीमा भी कहल जा सकेला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D3_11225_841215_M_BANK_117077_10032974.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bh_D3_11257_841215_F_AGRI_121420_10029380</code></td>
+<td>भूजल के भराव आ रिसाव होला</td>
+<td><audio controls preload='none' src='samples/bh/IISc_RESPIN_bh_D3_11257_841215_F_AGRI_121420_10029380.mp3?v=1755211164'></audio></td>
+</tr>
+</tbody></table>
+<h2>bn</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bn_D1_20102_721101_F_AGRI_202149_20833864</code></td>
+<td>যে কোন পুকুর বা নদীতে চিংড়ি চাষ করা হতিছে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_AGRI_202149_20833864.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bn_D1_20102_721101_F_BANK_201207_20833942</code></td>
+<td>দুইহাজার পাঁচ সালে সরকার থেকে পুল্ড ফিন্যান্স ডেভেলপমেন্ট স্কিম শুরু করতিছে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_BANK_201207_20833942.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bn_D1_20102_721101_F_BANK_201511_20833846</code></td>
+<td>বিদেশে ব্যবসা করবার লিগে যে সরাসরি টাকা খাটায়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_BANK_201511_20833846.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bn_D1_20181_NA_F_BANK_201232_20921360</code></td>
+<td>লোকের নু টাকা লিয়ে সরকার কাজ করতিছে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D1_20181_NA_F_BANK_201232_20921360.mp3?v=1755211164'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_bn_D1_20272_721101_F_BANK_201340_20918815</code></td>
+<td>আঞ্চলিক সব কাজ কামের লিগে যে গুলা সই করতেছে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D1_20272_721101_F_BANK_201340_20918815.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bn_D2_20006_733145_M_AGRI_205270_20788357</code></td>
+<td>এক জমিতে ঘুরে ঘুরে পশু প্রাণীদের চাষ করে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D2_20006_733145_M_AGRI_205270_20788357.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bn_D2_20006_733145_M_AGRI_206881_20789785</code></td>
+<td>জল যখন আমরা এক্সপ্লইট করি তখন জলের অপচয় হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D2_20006_733145_M_AGRI_206881_20789785.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bn_D2_20325_733145_F_AGRI_208255_20932711</code></td>
+<td>ফার্মে আমরা পশুপালন করব কিভাবে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D2_20325_733145_F_AGRI_208255_20932711.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bn_D2_20792_733145_M_BANK_204594_20646975</code></td>
+<td>ব্যাঙ্কের স্টেটমেন্টস গুলো টাকা লেনদেন করার পর পাবো</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D2_20792_733145_M_BANK_204594_20646975.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_bn_D2_20796_733145_F_BANK_205530_20641822</code></td>
+<td>বাঙ্ক একাউন্টে সব রকমের কাজ করা হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D2_20796_733145_F_BANK_205530_20641822.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bn_D3_21009_700153_M_BANK_208680_20144710</code></td>
+<td>কেন্দ্রীয় সরকার দ্বারা পরিচালিত ব্যাঙ্কগুলোকে সেন্ট্রাল ব্যাঙ্ক বলা হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D3_21009_700153_M_BANK_208680_20144710.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bn_D3_21036_700046_F_AGRI_211208_20031513</code></td>
+<td>তেজপাতাকে ইংরেজিতে বে লিফ বলে যেটা ভেষজ হিসেবে ব্যবহার করা হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D3_21036_700046_F_AGRI_211208_20031513.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bn_D3_21196_700153_F_AGRI_208563_20008211</code></td>
+<td>সুপারি ফলটিকে ইংরেজিতে বিটেল নাট বলা হয় এবং এটি পানে ব্যবহৃত হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D3_21196_700153_F_AGRI_208563_20008211.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bn_D3_21196_700153_F_BANK_208660_20041348</code></td>
+<td>গবেষণার কাজের জন্য যে তহবিল পাওয়া যায় তাকে স্টাইপেন্ড বলা হয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D3_21196_700153_F_BANK_208660_20041348.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_bn_D3_21204_700039_F_AGRI_210442_20001114</code></td>
+<td>জলজ যে সমস্ত শৈবাল চাষ করা হয় সেটাকে সি উইড ফার্মিং বলে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D3_21204_700039_F_AGRI_210442_20001114.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214142_20267467</code></td>
+<td>টেরেস কাল্টিভেশল বা চাষ পধালত পাহাড়ি ইলাকা গুলাতে ক্যরা হ্যয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214142_20267467.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214146_20267426</code></td>
+<td>যেখালে পশু পালল ক্যরা হ্যয় উয়াদেরকে লিয়মিত ভাবে বিরিড ক্যরাল হ্যয়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214146_20267426.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214211_20270919</code></td>
+<td>সারা দুলিয়া জুড়ে মালুষ মাছক লালা ভাবে খায়</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214211_20270919.mp3?v=1755211165'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_bn_D4_21249_723121_M_BANK_214404_20267445</code></td>
+<td>কল টাকার বিলিয়গ বা ইস্থালাল্তরের মাইধ্যমকে মিডিয়াম অফ এক্সচেঞ্জ ব্যলে</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_BANK_214404_20267445.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_bn_D4_21249_723121_M_BANK_215248_20267237</code></td>
+<td>ৠল আর ইকুইটি মালে হছে দুটা আলেদা রকমের ফিল্যাল্স ব্যবস্থা</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_BANK_215248_20267237.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_bn_D5_21551_735233_F_AGRI_217842_20499996</code></td>
+<td>সফ্টউড মানে হসে আক ধরণের কাঠ যেটা সিডার আর সপ্রুস গাছ থুই পাইচুঙ</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_217842_20499996.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218195_20429112</code></td>
+<td>পুরা দ্যাশোত জুড়ি মেলাগিলা শতাংশর লোক মাছ খাই</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218195_20429112.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218382_20506540</code></td>
+<td>ফেস্টিলিজের মানে হইলো সার যেটো ভালা করে ফছল ফলনের জন্য ব্যবহার করাং হই</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_218382_20506540.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_bn_D5_21551_735233_F_AGRI_220479_20506543</code></td>
+<td>বিশেষ করি গছের পাতা ডাল ও ফুলের ক্ষয় দ্যাখিয়া বালাইয়ের চিন করাং যাই</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_220479_20506543.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_bn_D5_21551_735233_F_BANK_217767_20504640</code></td>
+<td>কোনো ব্যাংকোত অনলাইন পেমেন্টের পরিষেবা ভোগ করাত হলে আকটা লগইন আই.ডি ও পাসওয়ার্ড দেওয়াঙ হই</td>
+<td><audio controls preload='none' src='samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_BANK_217767_20504640.mp3?v=1755211166'></audio></td>
+</tr>
+</tbody></table>
+<h2>ch</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500</code></td>
+<td>डायरेक्ट टेक्स हमेसा एक कोनो मनसे के ऊपर लगथे ओखर आवक के ऊपर</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_ch_D1_30034_NA_F_AGRI_300906_30050373</code></td>
+<td>छेरी दूद ल मनसे मन दवई बरोबर बउरथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D1_30034_NA_F_AGRI_300906_30050373.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_ch_D1_30038_495115_F_BANK_302123_30118713</code></td>
+<td>आज के बेरा सब्बो काम ह ऑनलाइन होथे ओकरे सेती मनसे ल बरोबर बने जानकारी घलौ बरोबर होना जरूरी हे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D1_30038_495115_F_BANK_302123_30118713.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_ch_D1_30068_495001_M_BANK_304892_30141249</code></td>
+<td>ए.टी.एम कारड के जरिए मै ह एक दिन मा कतका पइसा निकाल सकथो ओला बतावव</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D1_30068_495001_M_BANK_304892_30141249.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_ch_D1_30071_495119_F_BANK_303200_30010771</code></td>
+<td>जेन मनसे मन करा जादा पइसा रथे ओमन ओला बेंक म जमा कर देथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D1_30071_495119_F_BANK_303200_30010771.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_ch_D2_30182_496001_M_BANK_309792_30082738</code></td>
+<td>एक खाता से दूसर खाता मे हमन यू.पी.आई से कैसे पैसा भेज सकत हन</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D2_30182_496001_M_BANK_309792_30082738.mp3?v=1755211166'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_ch_D2_30189_496001_F_AGRI_305475_30126261</code></td>
+<td>किसानी के बूता म घलोक किसान ल बनेच जिनिस बिसाए बर परथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D2_30189_496001_F_AGRI_305475_30126261.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_ch_D2_30270_496001_F_AGRI_308732_30190524</code></td>
+<td>फूलगोभी के खेती म एक एकड़ म कतक यूरिया देना ये</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D2_30270_496001_F_AGRI_308732_30190524.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_ch_D2_30276_496001_M_BANK_309480_30072568</code></td>
+<td>मोला सामाजिक जोन लाभकारी योजना के बारे म कैसे पता करूं</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D2_30276_496001_M_BANK_309480_30072568.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_ch_D2_30279_496440_M_BANK_307125_30123122</code></td>
+<td>बीमा करवाय ले बनेच के फायदा हावय गा</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D2_30279_496440_M_BANK_307125_30123122.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584</code></td>
+<td>कनकट्टा कीरा एक परकार के फसल काटे वाले कीरा हरय कनकट्टा कीरा छोटे अउ बड़े दुनो अकार के होथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_ch_D3_30324_491995_M_AGRI_313437_30372728</code></td>
+<td>का मौसम खराब से फसल म दिक्कत होथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_313437_30372728.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_ch_D3_30326_491995_F_AGRI_310394_30471707</code></td>
+<td>डेयरी ले उत्पादित जिनिस ह सब्बो घर म लागबे करथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_310394_30471707.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311115_30479376</code></td>
+<td>जउन गाय ह दूद देवत रहिथे तउन ह ए बेमारी के आए ले दूद देबर कमती कर देथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311115_30479376.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311377_30478130</code></td>
+<td>पहिली के समे म पानी के सुबिधा के नइ होय ले किसान मन के फसल ह थोरको नइ होवत रिहिस हवय</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D3_30326_491995_F_AGRI_311377_30478130.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165</code></td>
+<td>गाँव कती कर किसान मन कर ढेटू मे हमेसा डोरा पाबेच करबे खेत खाएर जात घनी</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_315587_30300830</code></td>
+<td>देओनी नसल के गाय हर आंध्र परदेस में खाल्हे डहर के जिला मन में मिलथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_315587_30300830.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_316107_30297706</code></td>
+<td>जेन बड़खा किसान रहें ना जेमन बगरा मातरा में खेती किसानी करें ओमने जग दिखई देहे इस्पेयर हर</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_316107_30297706.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317660_30303137</code></td>
+<td>दीमक कर कीरा हर खेती ला कौन कसक नुकसान पहुंचाथे</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317660_30303137.mp3?v=1755211167'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317885_30304407</code></td>
+<td>खीरा ला कोन महीना मा लगाबो ता ओहार मान बेडिया होही</td>
+<td><audio controls preload='none' src='samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_317885_30304407.mp3?v=1755211168'></audio></td>
+</tr>
+</tbody></table>
+<h2>kn</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_kn_D1_50576_583101_M_BANK_522247_50283818</code></td>
+<td>ನಾವು ನಮ್ ಠೇವಣಿ ಖಾತ್ಯಾಗ ಜಗ್ಗಿ ರೊಕ್ಕಹಾಕಾದ್ರಲಾಸಿ ಬಡ್ಡಿ ಜಾಸ್ತಿ ಆಗಿ ನಮಿಗೆ ಲಾಭ ಆತತೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D1_50576_583101_M_BANK_522247_50283818.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_kn_D1_50702_583101_M_AGRI_522158_50412623</code></td>
+<td>ನಮ್ ಮನೇರಿಗೆಲ್ಲ ಅಸ್ಸಾಂ ಟೀ ಜಗ್ಗಿ ಇಷ್ಟ ಅಸ್ಸಾಂನಾಗ ಜಾಸ್ತಿ ಟೀ ಉತ್ಪಾದನೆ ಆತತೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D1_50702_583101_M_AGRI_522158_50412623.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_kn_D1_50728_583101_F_AGRI_521844_50365340</code></td>
+<td>ಅಕ್ವಾಫೋನಿಕ್ಸ್ ಸಸ್ಯಗಳು ಬೆಳೆಕ ನೀರಿನಗ ಮೀನಿನ ತ್ಯಾಜ್ಯ ವಸ್ತುಗುಳ್ನ ಬಳಸ್ತಾರ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D1_50728_583101_F_AGRI_521844_50365340.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_kn_D1_50913_583101_F_AGRI_519624_50480558</code></td>
+<td>ಮೆಕ್ಕೆಜೋಳದ ಜಿನ್ನ ಖರೇದಿ ಮಾಡೋಕೆ ರೊಕ್ಕ ಎಷ್ಟು ಆಗುತ್ತೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D1_50913_583101_F_AGRI_519624_50480558.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_kn_D1_50927_583121_M_BANK_521822_50507062</code></td>
+<td>ಮಂದಿಗೆ ಸಣ್ಣ ಮಟ್ಟದ ರೊಕ್ಕ ಸಾಲ ಕೊಡಕ ಸಹಕಾರ ಬ್ಯಾಂಕ್ ಗಳು ಸಹಾಯ ಮಾಡ್ತಾವ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D1_50927_583121_M_BANK_521822_50507062.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_kn_D2_50217_574230_M_AGRI_504947_50219071</code></td>
+<td>ಬೆಂಡೆ ಗಿಡ ಬೇಗ ಕಾಯಿ ಬರಲು ಎಂತ ಮಾಡಬೇಕು</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D2_50217_574230_M_AGRI_504947_50219071.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_kn_D2_50990_574150_F_AGRI_504948_50548559</code></td>
+<td>ಭತ್ತದ ಕುರಲ್ ಬೇಗ ಬರಲು ಎಂತ ಮಾಡಬೇಕು</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D2_50990_574150_F_AGRI_504948_50548559.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_kn_D2_50998_575015_F_AGRI_505349_50493019</code></td>
+<td>ರಸಗೊಬ್ಬರ ಮಿಶ್ರಣ ಮಾಡಿದರೆ ಮಣ್ಣು ಫಲವತ್ತತೆ ಆಗುತ್ತದಾ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_AGRI_505349_50493019.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_kn_D2_50998_575015_F_BANK_509568_50523841</code></td>
+<td>ಅಗತ್ಯಕ್ಕಿಂತ ಮತ್ತೆ ಅವಶ್ಯಕತೆ ಇರುದಕ್ಕಿಂತ ಜಾಸ್ತಿ ಹೂಡಿಕೆ ಮಾಡುವ ಅಭ್ಯಾಸ ಲಂಚಕ್ಕೆ ದಾರಿ ಆಗ್ತಿದೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_BANK_509568_50523841.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_kn_D2_50998_575015_F_BANK_523673_50523235</code></td>
+<td>ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಡೇಟಾ ಇಂಟರ್ ಚೇಂಜಿನ ಉಪಘಟಕ ಆಗಿರುವ ಆನ್ಲೈನ್ ಸೇವೆಯು ಇಂಟರ್ನೆಟ್ ಆಧಾರಿತ ಶಾಪಿಂಗ್ ಮತ್ತೆ ಬ್ಯಾಂಕಿಂಗ್ ಆಗಿದೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D2_50998_575015_F_BANK_523673_50523235.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_kn_D3_50416_580002_M_AGRI_518073_50316807</code></td>
+<td>ಮಂಜುಗಡ್ಡೆ ಘನ ರೂಪದಾಗ ಇರತತಿ ಇದರ ಸಾಂದ್ರತೆನು ಕಡಮಿ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D3_50416_580002_M_AGRI_518073_50316807.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_kn_D3_50447_580001_M_AGRI_517162_50308925</code></td>
+<td>ಬೆಂಡೆಗಿಡ ಹತ್ತಿ ಬೆಳಿಯೋ ಹವೆ ಮತ್ತು ಮಣ್ಣಿನ್ಯಾಗ ಚೊಲೋ ಬೆಳಿತದ ಎಳೆ ಬೆಂಡೆ ಕಾಯಾಗ ಲೋಳೆಯಂತ ವಸ್ತುಇರ್ತೇತಿ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D3_50447_580001_M_AGRI_517162_50308925.mp3?v=1755211168'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_kn_D3_50468_580004_M_AGRI_515027_50450643</code></td>
+<td>ಒಂದ್ ಚಿಟ್ಟಿ ಭತ್ತ ಎಷ್ಟ್ ಕಿಲೋಗ್ರಾಂ ಭತ್ತಕ್ಕ ಸಮ ಆಕ್ಕೆತಿ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D3_50468_580004_M_AGRI_515027_50450643.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_kn_D3_50493_580001_M_BANK_516469_50344610</code></td>
+<td>ಹೂಡ್ಕಿಮಾಡಿದ್ದ ಬಾಂಡಿನ್ ಬಡ್ಡಿ ವಮ್ಮಿಂದ್ವಮ್ಮಿಗ್ಲೆ ಕೆಳಗಿಳಿತಂದ್ರ ಬಡ್ಡಿ ದರದ ಅಪಾಯಾ ಆಕ್ಕೇತಿ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D3_50493_580001_M_BANK_516469_50344610.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_kn_D3_51124_580007_F_AGRI_517937_50504221</code></td>
+<td>ಆಡುಗಳನ್ನ ಅದರ ಉಣ್ಣಿ ಮತ್ತ ಮಾಂಸಕ್ಕಾಗಿನು ಸಾಕತಾರ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D3_51124_580007_F_AGRI_517937_50504221.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_kn_D4_50294_585102_M_AGRI_510201_50684027</code></td>
+<td>ಬೆಳಿಗೊಳಿಗ್ ಜಾಸ್ತಿ ನೀರ್ ಹಾಕಿದ್ರಿನ್ದ ಅಥವಾ ಜೋರ್ ಮಳಿ ಆಗ್ತದ್ರಿನ್ದ ಬೆಳಿದ್ ಎಲಿ ಮತ್ ಹೂವಾ ಬಾಡ್ಬಹುದ್</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_AGRI_510201_50684027.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_kn_D4_50294_585102_M_AGRI_524367_50695364</code></td>
+<td>ಬ್ರಿಂಜಲ್ ಅಂದುರ್ ಬದನೆ ಕಾಯಿ ಪಲ್ಯ ಅದಾ ಇವು ಭಾರತ ಸಿಂಗಪೂರ್ ಮಲೇಷ್ಯಾ ಮತ್ತ ದಕ್ಷಿಣ ಆಫ್ರಿಕಾ ದೇಶಗೊಳ್ದಾಗ್ ಬೆಳಿತಾರ್</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_AGRI_524367_50695364.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_kn_D4_50294_585102_M_BANK_511110_50693893</code></td>
+<td>ನಾವ್ ಮನಿ ಗಿರ್ವಿಗ ಕೊಟ್ಟೂರ ನಮೂಗ ಭಾಳ ಫೈದಾ ಆತ್ತುದ ಅಂತ್ ನಮ್ ದೋಸ್ತ ಅಂದಾನ್</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511110_50693893.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_kn_D4_50294_585102_M_BANK_511214_50693926</code></td>
+<td>ಸ್ಟಾಕ್ ಅಂದುರ್ ಒಂದ್ ಟೈಪ್ ಕಂಪನಿನಾಗ್ ರೊಕ್ಕಾ ಹಾಕ್ತಿವ್ ಅಲ್ಲಾ ಅದ್ದುಕ ಸ್ಟಾಕ್ ಅಂತಾರ್</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511214_50693926.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_kn_D4_50294_585102_M_BANK_511377_50672037</code></td>
+<td>ಮೋರ್ಟ್ಗೆಜ್ ಲೋನ್ ಅಂದುರ್ ಒಂದ್ ಟೈಪ್ ಸಾಲಾ ಅಂತ್ ಅರ್ಥಾ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D4_50294_585102_M_BANK_511377_50672037.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_kn_D5_50007_571103_M_BANK_501294_50034311</code></td>
+<td>ಹೆಚ್ಚು ಜನರಿಂದ ಬಂಡವಾಳವನ್ನು ಸಂಗ್ರಹಿಸುವುದನ್ನೇ ಕ್ರೌಡಿಂಗ್ ಫಂಡ್ ಅಂತರೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D5_50007_571103_M_BANK_501294_50034311.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_kn_D5_50015_563146_M_BANK_504411_50033041</code></td>
+<td>ಪಿ.ಎಂ.ಎಫ್.ಬಿ.ವೈ ಪ್ರಧಾನ್ ಮಂತ್ರಿ ಫಸಲ್ ಭೀಮ ಯೋಜನೆ ಎಂದರೇನು</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D5_50015_563146_M_BANK_504411_50033041.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_kn_D5_50040_570001_M_AGRI_500038_50015063</code></td>
+<td>ಮನೆ ಕಟ್ಟಲು ಪ್ಲೈವುಡ್ ಸೀಟ್ ಗಳಿಗಾಗಿ ದಿಮ್ಮಿಗಳನ್ನು ಬಳ್ಸತ್ತರೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D5_50040_570001_M_AGRI_500038_50015063.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_kn_D5_50058_570001_M_AGRI_504017_50011307</code></td>
+<td>ರೈತರು ಬೆಳೆ ವಿಮೆ ಪಡೆಯಲು ಕೃಷಿ ಇಲಾಖೆಯಲ್ಲಿ ನೊಂದಾಯಿಸಬೇಕೇ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D5_50058_570001_M_AGRI_504017_50011307.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>IISc_RESPIN_kn_D5_50112_560076_F_AGRI_502228_50041502</code></td>
+<td>ಮೇಕೆಯ ಮುನ್ನೂರಕ್ಕಿಂತ ಹೆಚ್ಚು ತಳಿಗಳಿದ್ದು ಹೆಣ್ಣು ಮೇಕೆಯನ್ನು ನಾನೀಸ್ ಎಂದೂ ಗಂಡು ಮೇಕೆಯನ್ನು ಬಕ್ ಅಂತ ಕರೀತಾರೆ</td>
+<td><audio controls preload='none' src='samples/kn/IISc_RESPIN_kn_D5_50112_560076_F_AGRI_502228_50041502.mp3?v=1755211169'></audio></td>
+</tr>
+</tbody></table>
+<h2>mg</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mg_D1_60025_823311_M_AGRI_604905_60018419</code></td>
+<td>अपने धनमा कैसे कटाई करबा हखिन</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D1_60025_823311_M_AGRI_604905_60018419.mp3?v=1755211169'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mg_D1_60026_823001_F_AGRI_600626_60049508</code></td>
+<td>पहले समय के सिक्के काफी बड़े आकार के होवअ हलइ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_600626_60049508.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mg_D1_60026_823001_F_AGRI_601585_60038100</code></td>
+<td>मोती कईक रंग के होवऽ हइ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_601585_60038100.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mg_D1_60026_823001_F_AGRI_604823_60050349</code></td>
+<td>फेरोमैन ट्रैप का है और कैसे होब हइ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_604823_60050349.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mg_D1_60026_823001_F_AGRI_605373_60050197</code></td>
+<td>हार्वेस्टर मतलब का होब हइ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D1_60026_823001_F_AGRI_605373_60050197.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mg_D2_60118_800020_M_BANK_611265_60420881</code></td>
+<td>वित्तीय सेवाएं से लोन लेवे के खातिर कितना की रेट पर मिलता सके ला</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D2_60118_800020_M_BANK_611265_60420881.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mg_D2_60118_800020_M_BANK_611596_60420443</code></td>
+<td>रहुआ हमरा के बताइए ऑनलाइन बैलेंस जानकारी के लिए आधार कार्ड जरूरी होला</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D2_60118_800020_M_BANK_611596_60420443.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mg_D2_60163_811311_M_BANK_611254_60020692</code></td>
+<td>रहुआ बताइए सामाजिक योजना के लाभ लेने के लिए हमें बैंक अकाउंट खोलना अनिवार्य होला</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D2_60163_811311_M_BANK_611254_60020692.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mg_D2_60164_811107_M_BANK_610215_60388244</code></td>
+<td>विदेशी मुद्रा बाजार के वित्तीय संस्थान के माध्यम से काम करो हय</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D2_60164_811107_M_BANK_610215_60388244.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mg_D2_60164_811107_M_BANK_611650_60389214</code></td>
+<td>बीमा खातिर क्या क्या करना पड़ सकता है</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D2_60164_811107_M_BANK_611650_60389214.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mg_D3_60217_844121_F_AGRI_614326_60090994</code></td>
+<td>अमितब्बा के घर में मधुमक्खियन के झुंड हई</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_614326_60090994.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615273_60090459</code></td>
+<td>जैविक खाद के इस्तेमाल अब हर किसनवन अपन अपन स्तर पर कररे लग लय</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615273_60090459.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615395_60090960</code></td>
+<td>कीटनाशक दवा के प्रयोग फसल पर छिड़क के कइल जा सका हई</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_615395_60090960.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mg_D3_60217_844121_F_AGRI_616351_60092112</code></td>
+<td>बासमती चावल के बीज सबसे अच्छा कोन होइ छई</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_AGRI_616351_60092112.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mg_D3_60217_844121_F_BANK_613933_60091123</code></td>
+<td>कम समय के ई.एम.आई पर इंस्टॉलमेंट राशि बेशी देबेके होइ छइ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D3_60217_844121_F_BANK_613933_60091123.mp3?v=1755211170'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mg_D4_60386_855107_F_AGRI_619660_60119073</code></td>
+<td>जब स दादाजी ओट्स खा छ वहार बी.पी ठीक छ</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_619660_60119073.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620503_60119108</code></td>
+<td>गहरा भूरा रंगेर चना भारतत सर्वाधिक इस्तमाल कराल जा छेक</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620503_60119108.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620550_60119084</code></td>
+<td>कृषित पौधार उत्पादन आर इस्तमालक विज्ञान आर प्रौद्योगिकिक कृषि विज्ञान कहाल जा छेक</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_620550_60119084.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621814_60125378</code></td>
+<td>बदलते मौसम से किसानोक फसलेर सुरक्षा कुंसम करवा लगे</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621814_60125378.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621964_60126974</code></td>
+<td>कीड़ा कुन कुन किस्मेर होचए</td>
+<td><audio controls preload='none' src='samples/mg/IISc_RESPIN_mg_D4_60386_855107_F_AGRI_621964_60126974.mp3?v=1755211171'></audio></td>
+</tr>
+</tbody></table>
+<h2>mr</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708420_70705170</code></td>
+<td>बोकाड पिल्लाक जलाम दिवक चार ते सा म्हयन्यात तयार जाता</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708420_70705170.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708535_70705213</code></td>
+<td>सगळ्या प्रकारच्या मातयेचो कस सारखो नसता</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_708535_70705213.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mr_D1_70813_416531_M_AGRI_710366_70705405</code></td>
+<td>भारतात आठशे सत्तर प्रकारचे गोड्या पाण्यातले माशे आढळतत</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_710366_70705405.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711375_70743552</code></td>
+<td>खरीप पिकाची कापणी खयच्या महिन्यात करतत</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711375_70743552.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711616_70743550</code></td>
+<td>इलेक्ट्रॉनिक वजनकाट्यात माप मारुक येता काय</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D1_70813_416531_M_AGRI_711616_70743550.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mr_D2_70339_422101_M_AGRI_712726_70508199</code></td>
+<td>आलू बुखारनी शेती भारत ना डोंगराय भाग मान करतस</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D2_70339_422101_M_AGRI_712726_70508199.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mr_D2_70371_422008_F_AGRI_713887_70464820</code></td>
+<td>राजू घरगुती ग्रीनहाऊसमा चांगला काच वापरतस समजना का</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D2_70371_422008_F_AGRI_713887_70464820.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mr_D2_70404_422004_M_AGRI_712810_71175361</code></td>
+<td>जनावरस करता फार्म पशु कल्याण परिषद बनाडेल शे</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_712810_71175361.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714332_71173670</code></td>
+<td>पशु खत हाई पैसा देणारं उत्पादन शे</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714332_71173670.mp3?v=1755211171'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714525_71180137</code></td>
+<td>सेंद्रीय शेतीमा परंपरागत शेतीना तुलनामा कमी उत्पादन येस</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D2_70404_422004_M_AGRI_714525_71180137.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mr_D3_70029_411041_F_BANK_700852_70020893</code></td>
+<td>एन.बी.एफ.सी या बँकांप्रमाणेच कार्य करतात मग बँक व एन.बी.एफ.सी मध्ये काय फरक आहे</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D3_70029_411041_F_BANK_700852_70020893.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mr_D3_70030_NA_F_BANK_701088_70008892</code></td>
+<td>गोल्ड बॉण्डसाठी कसा अर्ज करायचा</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D3_70030_NA_F_BANK_701088_70008892.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mr_D3_70046_411037_F_BANK_706269_70018371</code></td>
+<td>या अर्जाची फी किती आहे</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D3_70046_411037_F_BANK_706269_70018371.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mr_D3_70062_NA_F_BANK_701498_70012116</code></td>
+<td>आपण आपला फास्ट टॅग रिचार्ज केला आहे का</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D3_70062_NA_F_BANK_701498_70012116.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mr_D3_70064_NA_F_AGRI_700602_70002343</code></td>
+<td>माझ्या कंपनीचे उत्पादन चांगले राहण्यासाठी मी काय उपाय केले पाहिजे</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D3_70064_NA_F_AGRI_700602_70002343.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mr_D4_70131_440030_M_AGRI_723167_70388224</code></td>
+<td>मले कमी खर्चामंदी संत्र्याची शेती कशी करता येईन</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_AGRI_723167_70388224.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mr_D4_70131_440030_M_BANK_723836_70388100</code></td>
+<td>माह्या खात्यातून हर महिन्याले कर्जाचे कितीक पैसे कटन</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_BANK_723836_70388100.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mr_D4_70131_440030_M_BANK_723875_70379918</code></td>
+<td>मोबाईलनं मले बिम्याचे हप्ते भरता येईन का</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D4_70131_440030_M_BANK_723875_70379918.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mr_D4_70135_441304_M_BANK_723762_70326282</code></td>
+<td>खातं काढताना मले किती पैसा भरा लागन</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D4_70135_441304_M_BANK_723762_70326282.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mr_D4_70135_441304_M_BANK_723825_70327132</code></td>
+<td>मले बँकेतून कितीक वर्षासाठी कर्ज भेटन</td>
+<td><audio controls preload='none' src='samples/mr/IISc_RESPIN_mr_D4_70135_441304_M_BANK_723825_70327132.mp3?v=1755211172'></audio></td>
+</tr>
+</tbody></table>
+<h2>mt</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mt_D1_80007_852201_M_AGRI_801850_80009533</code></td>
+<td>अरेबिक जैस्मिनक मारिते रास नाम छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D1_80007_852201_M_AGRI_801850_80009533.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mt_D1_80007_852201_M_AGRI_802815_80035487</code></td>
+<td>कदीमाक बीया खेला सँ डाइट्री फायदा भेटै छै आ इम्युन सिस्टम सेहो बढ़य छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D1_80007_852201_M_AGRI_802815_80035487.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mt_D1_80225_852201_M_BANK_801623_80220846</code></td>
+<td>वित्तीय डेटा बेचिकए गोलुआ मारिते रास पाय कमा रहल छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D1_80225_852201_M_BANK_801623_80220846.mp3?v=1755211172'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mt_D1_80311_852124_M_BANK_803988_80361867</code></td>
+<td>यस बैंक आब तीस प्रतिशत साझेदारी संगे स्टेट बैंक केर एसोसिएट बैंक भए गेल छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D1_80311_852124_M_BANK_803988_80361867.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_mt_D1_80900_852124_F_BANK_804204_80560932</code></td>
+<td>हरबरी बला चेकबुक पर दस पात लेल पचास टका संग जी.एस.टी लगै छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D1_80900_852124_F_BANK_804204_80560932.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mt_D2_80490_852112_F_AGRI_810783_80258549</code></td>
+<td>यांत्रिक ट्री शेकर बादाम पेकान सन फल कें काटे मे उपयोग कैल जाइ छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_AGRI_810783_80258549.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mt_D2_80490_852112_F_BANK_808350_80258564</code></td>
+<td>भारत मे आय केर स्वैच्छिक खुलासा योजना एकटा अपारंपरिक पर सफल योजना रहै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_BANK_808350_80258564.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mt_D2_80490_852112_F_BANK_809319_80254168</code></td>
+<td>मामूली लाभ लेल विभिन्न बाजार मे एक्के संपत्तिक खरीद बिक्री आर्बिट्रेज छियै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D2_80490_852112_F_BANK_809319_80254168.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mt_D2_80500_852113_F_AGRI_811418_80140277</code></td>
+<td>पपीता के खेती करे के लेल कोन परभेद सब निक होयत अछि</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D2_80500_852113_F_AGRI_811418_80140277.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_mt_D2_80511_852113_F_AGRI_811377_80020490</code></td>
+<td>तिलहन फसल लेल सुर्यमुखी के फुल के बड़ा होय लेल कोन खाद चाही</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D2_80511_852113_F_AGRI_811377_80020490.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812507_80032648</code></td>
+<td>महाशिवरात्रि पूजा में बेर फलक उपयोग कयल जाइत अछि</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812507_80032648.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812818_80032630</code></td>
+<td>कस्तूरा जीवक लेल विशिष्ठ रूप सॅ खेती कयल जाइत अछि</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_812818_80032630.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mt_D3_80025_846004_M_AGRI_813955_80037024</code></td>
+<td>खादक उपयोग बहुत ध्यानपूर्वक कयल जाइत अछि</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_813955_80037024.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814052_80017394</code></td>
+<td>तूर के कपड़ा उद्योग में बहुत महत्वपूर्ण स्थान अछि</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814052_80017394.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814153_80042336</code></td>
+<td>शस्य के कीटनाशकक लेल कृषक के ऋण लिअ पड़लैन</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D3_80025_846004_M_AGRI_814153_80042336.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mt_D4_80334_812001_F_AGRI_822462_80429975</code></td>
+<td>कुछो लकड़ी हल्का कुछो भारी आरु कुछो कमजोर होय छै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_822462_80429975.mp3?v=1755211173'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mt_D4_80334_812001_F_AGRI_823832_80429892</code></td>
+<td>कवचधारी नाशक रो प्रयोग से किसानो के फैदा होलै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_823832_80429892.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824571_80430860</code></td>
+<td>दोमत मिट्टी के फ़सल केना लगैलो जाय</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824571_80430860.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824833_80430892</code></td>
+<td>धान के सुरक्षित भंडारण वास्ते व्यवथा के जानकारी कहाँ मिलतै</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_AGRI_824833_80430892.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_mt_D4_80334_812001_F_BANK_820306_80430515</code></td>
+<td>एकरो सुविधा लै के लेली नेटवर्क आरु मोबाइल आकि कम्प्यूटर चाहियो</td>
+<td><audio controls preload='none' src='samples/mt/IISc_RESPIN_mt_D4_80334_812001_F_BANK_820306_80430515.mp3?v=1755211174'></audio></td>
+</tr>
+</tbody></table>
+<h2>te</h2>
+<table><thead><tr><th>Dialect</th><th>UttID</th><th>Text</th><th>Audio</th></tr></thead><tbody>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_te_D1_90606_522005_M_AGRI_902940_90099837</code></td>
+<td>పండ్ల పెంపకం అనేది ప్రత్యేక వ్యవసాయ శాఖగా రూపుదిద్దుకున్నది</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D1_90606_522005_M_AGRI_902940_90099837.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_te_D1_90606_522005_M_BANK_904558_90101722</code></td>
+<td>నా బ్యాంక్ ఖాతాకి నా యొక్క ఆధార్ నంబర్ లింక్ చెయ్యండి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D1_90606_522005_M_BANK_904558_90101722.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_te_D1_90618_522001_F_BANK_904491_90139093</code></td>
+<td>నా యొక్క కుమారునికి విదేశాల చదువుకు విద్యా ఋణం పొందవచ్చునా</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D1_90618_522001_F_BANK_904491_90139093.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_te_D1_90827_522001_M_BANK_902819_90164052</code></td>
+<td>క్రెడిట్ కార్డ్ పై బాకీ ఉన్న బ్యాలెన్స్ తదుపరి నెల బిల్లుకు జోడించబడుతుంది</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D1_90827_522001_M_BANK_902819_90164052.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D1</td>
+<td><code>IISc_RESPIN_te_D1_90830_522002_M_AGRI_903046_90154812</code></td>
+<td>మా ఇంట్లో మేము చిన్నప్పుడు చదువుకునేటప్పుడు చాలా పెద్ద కరివేపాకు చెట్టు ఉండేది</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D1_90830_522002_M_AGRI_903046_90154812.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_te_D2_90199_517325_F_BANK_909593_90317885</code></td>
+<td>మామూలుగా అప్పు కట్టేదానికి ఎన్ని కంతులుగా ఉంటాయి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_909593_90317885.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_te_D2_90199_517325_F_BANK_910023_90317668</code></td>
+<td>ఇన్సూరెన్సు అంటే ఏమి దాని ఉపయోగాలు సెప్పండి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_910023_90317668.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_te_D2_90199_517325_F_BANK_910138_90317861</code></td>
+<td>మేము అకౌంట్ బ్యాలెన్స్ ఎట్లా తెల్సుకోవాలి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D2_90199_517325_F_BANK_910138_90317861.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_te_D2_90201_517325_M_AGRI_909241_90373155</code></td>
+<td>వరి పైరు ని నాటేకి మంచి టాక్టర్ ఏది రేటు ఎంత</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D2_90201_517325_M_AGRI_909241_90373155.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D2</td>
+<td><code>IISc_RESPIN_te_D2_90201_517325_M_AGRI_909400_90373455</code></td>
+<td>నా పత్తి మంచిగా ఉందా అని ఎట్లా పరీక్షించేది</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D2_90201_517325_M_AGRI_909400_90373455.mp3?v=1755211174'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_te_D3_90559_508001_F_AGRI_917237_90423526</code></td>
+<td>అయితే రోలర్ అనేది భూమిని చదును సేయటానికి ఉపయోగించే యంత్రంగా గుర్తించారు</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D3_90559_508001_F_AGRI_917237_90423526.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_te_D3_90559_508001_F_BANK_917021_90421287</code></td>
+<td>మంచి రాబడులకు ఎట్లాంటి పెట్టుబడులు పెట్టాలే</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D3_90559_508001_F_BANK_917021_90421287.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_te_D3_91380_508210_M_AGRI_917066_90593290</code></td>
+<td>చూడు యాదమ్మ మనం పొలం సక్కగా దున్ని విత్తనాలు నాటుకోవాలి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D3_91380_508210_M_AGRI_917066_90593290.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_te_D3_91380_508210_M_AGRI_917395_90595849</code></td>
+<td>రంగయ్య మొసళ్ల జనాభాను జాగ్రత్తగా పరిశీలించి ప్రత్యేక పెంపకం దారులు ఈ మాంసాన్ని తయారు సేసారు</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D3_91380_508210_M_AGRI_917395_90595849.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>IISc_RESPIN_te_D3_91385_505404_F_AGRI_918852_90911285</code></td>
+<td>రంగయ్య బియ్యం పండించుటలో మన దేసం రెండో స్థానంలో ఉందంట</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D3_91385_505404_F_AGRI_918852_90911285.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_te_D4_90367_530013_F_AGRI_910485_90335614</code></td>
+<td>సెనగ పంటకి ఎన్ని రోజులకి నీటినీ అందించాలి</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D4_90367_530013_F_AGRI_910485_90335614.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_te_D4_90367_530013_F_AGRI_914017_90355515</code></td>
+<td>కొబ్బరి మొక్కలను నాటి అనేకమందికి ఉపాధి కల్పించవచ్చు</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D4_90367_530013_F_AGRI_914017_90355515.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_te_D4_90367_530013_F_BANK_911377_90340919</code></td>
+<td>నా దేశం లేని వారికి మనం డబ్బు ఎలా పంపగలం</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D4_90367_530013_F_BANK_911377_90340919.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_te_D4_90391_530051_M_AGRI_910790_90333203</code></td>
+<td>ఇసుక నేలలో పసుపు పంట వెయ్యొచ్చా</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D4_90391_530051_M_AGRI_910790_90333203.mp3?v=1755211175'></audio></td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>IISc_RESPIN_te_D4_90391_530051_M_AGRI_910956_90333007</code></td>
+<td>ఆవుల అలానే గేదెల పెంపకం ఎలా వాటి దాణ అలానే జబ్బుల నివారణ ఎలా</td>
+<td><audio controls preload='none' src='samples/te/IISc_RESPIN_te_D4_90391_530051_M_AGRI_910956_90333007.mp3?v=1755211175'></audio></td>
+</tr>
+</tbody></table>
+</body></html>
