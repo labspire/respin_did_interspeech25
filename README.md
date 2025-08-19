@@ -48,6 +48,50 @@ We evaluate on the **[RESPIN Corpus](https://spiredatasets.ee.iisc.ac.in/respinc
 - **Training data**: ~140–175 hrs read speech per language  
 - **Setup**: Small train set is used for all languages in this work  
 
+
+## 🌍 Languages and Dialects in RESPIN
+
+| Language     | Lang ID | Dialect ID | Dialect Name                                |
+|--------------|---------|------------|---------------------------------------------|
+| Bengali      | bn      | D1         | Western (Pashchim Medinipore)               |
+| Bengali      | bn      | D2         | Northern/Varendri (Dakshin Dinajpur, Malda) |
+| Bengali      | bn      | D3         | Standard Colloquial (South 24 Parganas)     |
+| Bengali      | bn      | D4         | Jharkhandi (Puruliya)                       |
+| Bengali      | bn      | D5         | Rajbangshi (Jalpaiguri)                     |
+| Bhojpuri     | bh      | D1         | Northern (East Champaran, Deoria)           |
+| Bhojpuri     | bh      | D2         | Western (Varanasi)                          |
+| Bhojpuri     | bh      | D3         | Southern / Standard (Saran)                 |
+| Chhattisgarhi| ch      | D1         | Central (Bilaspur)                          |
+| Chhattisgarhi| ch      | D2         | Eastern (Raigarh)                           |
+| Chhattisgarhi| ch      | D3         | Western/Budati/Khatahi (Kabeerdham)         |
+| Chhattisgarhi| ch      | D4         | Northern/Bhandar (Sarguja)                  |
+| Hindi        | hi      | D1         | Hindustani Malvi Khadi Boli (Muzaffarnagar) |
+| Hindi        | hi      | D2         | Kanauji Braj Bhasha (Etah)                  |
+| Hindi        | hi      | D3         | Awadhi Bundeli (Hamirpur)                   |
+| Hindi        | hi      | D4         | Marwari Dhudhari (Nagaur)                   |
+| Hindi        | hi      | D5         | Garhwali (Tehri Garhwal)                    |
+| Kannada      | kn      | D1         | Central (Bellary)                           |
+| Kannada      | kn      | D2         | Coastal/Dakshin (Mangalore)                 |
+| Kannada      | kn      | D3         | Dharwad Kannada (Dharwad)                   |
+| Kannada      | kn      | D4         | Northeastern (Gulbarga)                     |
+| Kannada      | kn      | D5         | Mysore Kannada (Mysore)                     |
+| Magahi       | mg      | D1         | Central/Standard (Gaya, Patna)              |
+| Magahi       | mg      | D2         | Southern (Lakhisarai)                       |
+| Magahi       | mg      | D3         | Western (Vaishali)                          |
+| Magahi       | mg      | D4         | Northeastern/Surjapuri (Kishanganj)         |
+| Maithili     | mt      | D1         | Bajjika (Samastipur)                        |
+| Maithili     | mt      | D2         | Eastern / Thethi (Madhepura)                |
+| Maithili     | mt      | D3         | Southern/Standard (Darbhanga)               |
+| Maithili     | mt      | D4         | Angika (Bhagalpur)                          |
+| Marathi      | mr      | D1         | Southern Konkan (Sindhudurg)                |
+| Marathi      | mr      | D2         | Northern Konkan (Nashik, Dhule)             |
+| Marathi      | mr      | D3         | Standard Marathi (Pune)                     |
+| Marathi      | mr      | D4         | Varhadi (Nagpur)                            |
+| Telugu       | te      | D1         | Central/Coastal (Guntur, Krishna)           |
+| Telugu       | te      | D2         | Southern (Chittoor, Anantapur)              |
+| Telugu       | te      | D3         | Telangana (Karimnagar, Nalgonda)            |
+| Telugu       | te      | D4         | Utterandhra (Srikakulam, Vizag)             |
+
 ---
 
 ## 🏗 Model Architecture
