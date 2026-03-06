@@ -1,6 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="utf-8">
 <title>RESPIN DID – Dialect Examples</title>
@@ -8,291 +8,78 @@
 
 <style>
 
-body{
-font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+body {
+font-family:system-ui,Segoe UI,Roboto;
 margin:30px;
 background:#fafafa;
-color:#222;
 }
 
-h1{
-margin-bottom:5px;
-}
-
-.subtitle{
-color:#555;
-margin-bottom:25px;
-}
-
-/* language buttons */
-
-.language-btn{
+.language-btn {
 display:block;
 width:100%;
-text-align:left;
-padding:16px 20px;
-margin-top:12px;
+padding:15px;
+margin-top:10px;
 font-size:18px;
 border:none;
 border-radius:8px;
 background:#2c7be5;
 color:white;
 cursor:pointer;
-transition:0.2s;
 }
 
-.language-btn:hover{
-background:#1a68d1;
-}
-
-/* collapsible content */
-
-.lang-section{
+.lang-section {
 display:none;
 background:white;
-padding:18px;
+padding:20px;
 border-radius:10px;
-box-shadow:0 2px 10px rgba(0,0,0,0.08);
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
 margin-top:10px;
 }
 
-/* tables */
-
-table{
+table {
 border-collapse:collapse;
 width:100%;
-margin-top:12px;
-font-size:14px;
 }
 
-th,td{
-border:1px solid #e5e7eb;
+th,td {
+border:1px solid #ddd;
 padding:8px;
-vertical-align:top;
 }
 
-th{
+th {
 background:#f3f4f6;
-font-weight:600;
 }
 
-audio{
+audio {
 width:260px;
 }
 
-/* dialect colors */
-
-.d1{background:#e8f2ff;}
-.d2{background:#e8fff2;}
-.d3{background:#fff7e6;}
-.d4{background:#fde8ff;}
-.d5{background:#e8fbff;}
-
-code{
-background:#f6f8fa;
-padding:2px 4px;
-border-radius:4px;
-}
+.d1 {background:#e8f2ff}
+.d2 {background:#e8fff2}
+.d3 {background:#fff6e8}
+.d4 {background:#fde8ff}
+.d5 {background:#e8fbff}
 
 </style>
+
 </head>
 
 <body>
 
 <h1>RESPIN DID – Dialect Examples</h1>
-<p class="subtitle">Short web-playable clips (MP3, 16 kHz mono). Use headphones.</p>
+<p>Short web-playable clips (MP3, 16 kHz mono). Use headphones.</p>
 
-<!-- Bhojpuri -->
 
-<button class="language-btn" onclick="toggleLang('bh')">
-Bhojpuri
-</button>
-
-<div id="bh" class="lang-section">
-
-<table>
-
-<thead>
-<tr>
-<th>Dialect</th>
-<th>UttID</th>
-<th>Text</th>
-<th>Audio</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr class="d1">
-<td>Northern (East Champaran, Deoria)</td>
-<td><code>IISc_RESPIN_bh_D1_10761_274001_M_BANK_101155_10322027</code></td>
-<td>क्रेडिट सलाह तरह के सलाह लोग अपनी उधार के कम करे खातिर करत बाटे</td>
-<td>
-<audio controls preload="none" src="samples/bh/IISc_RESPIN_bh_D1_10761_274001_M_BANK_101155_10322027.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d2">
-<td>Western (Varanasi)</td>
-<td><code>IISc_RESPIN_bh_D2_10109_221101_F_AGRI_112197_10686840</code></td>
-<td>पर्माकल्चर खेती एक स्थाई खेती के रूप हौ</td>
-<td>
-<audio controls preload="none" src="samples/bh/IISc_RESPIN_bh_D2_10109_221101_F_AGRI_112197_10686840.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d3">
-<td>Southern / Standard (Saran)</td>
-<td><code>IISc_RESPIN_bh_D3_11137_841215_F_AGRI_116334_10883021</code></td>
-<td>हम कही पढ़ले रहनी की ज्यादा बांस के खेती गर्म जगह पर होखेला</td>
-<td>
-<audio controls preload="none" src="samples/bh/IISc_RESPIN_bh_D3_11137_841215_F_AGRI_116334_10883021.mp3"></audio>
-</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-<!-- Bengali -->
-
-<button class="language-btn" onclick="toggleLang('bn')">
-Bengali
-</button>
-
-<div id="bn" class="lang-section">
-
-<table>
-
-<thead>
-<tr>
-<th>Dialect</th>
-<th>UttID</th>
-<th>Text</th>
-<th>Audio</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr class="d1">
-<td>Western (Pashchim Medinipore)</td>
-<td><code>IISc_RESPIN_bn_D1_20102_721101_F_AGRI_202149_20833864</code></td>
-<td>যে কোন পুকুর বা নদীতে চিংড়ি চাষ করা হতিছে</td>
-<td>
-<audio controls preload="none" src="samples/bn/IISc_RESPIN_bn_D1_20102_721101_F_AGRI_202149_20833864.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d2">
-<td>Northern / Varendri (Dakshin Dinajpur, Malda)</td>
-<td><code>IISc_RESPIN_bn_D2_20006_733145_M_AGRI_205270_20788357</code></td>
-<td>এক জমিতে ঘুরে ঘুরে পশু প্রাণীদের চাষ করে</td>
-<td>
-<audio controls preload="none" src="samples/bn/IISc_RESPIN_bn_D2_20006_733145_M_AGRI_205270_20788357.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d3">
-<td>Standard Colloquial (South 24 Parganas)</td>
-<td><code>IISc_RESPIN_bn_D3_21009_700153_M_BANK_208680_20144710</code></td>
-<td>কেন্দ্রীয় সরকার দ্বারা পরিচালিত ব্যাঙ্কগুলোকে সেন্ট্রাল ব্যাঙ্ক বলা হয়</td>
-<td>
-<audio controls preload="none" src="samples/bn/IISc_RESPIN_bn_D3_21009_700153_M_BANK_208680_20144710.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d4">
-<td>Jharkhandi (Puruliya)</td>
-<td><code>IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214142_20267467</code></td>
-<td>টেরেস কাল্টিভেশল বা চাষ পধালত পাহাড়ি ইলাকা গুলাতে ক্যরা হ্যয়</td>
-<td>
-<audio controls preload="none" src="samples/bn/IISc_RESPIN_bn_D4_21249_723121_M_AGRI_214142_20267467.mp3"></audio>
-</td>
-</tr>
-
-<tr class="d5">
-<td>Rajbangshi (Jalpaiguri)</td>
-<td><code>IISc_RESPIN_bn_D5_21551_735233_F_AGRI_217842_20499996</code></td>
-<td>সফ্টউড মানে হসে আক ধরণের কাঠ যেটা সিডার আর সপ্রুস গাছ থুই পাইচুঙ</td>
-<td>
-<audio controls preload="none" src="samples/bn/IISc_RESPIN_bn_D5_21551_735233_F_AGRI_217842_20499996.mp3"></audio>
-</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-<!-- Chhattisgarhi -->
-
-<button class="language-btn" onclick="toggleLang('ch')">
-Chhattisgarhi
-</button>
-
-<div id="ch" class="lang-section">
-
-<table>
-<thead>
-<tr>
-<th>Dialect</th>
-<th>UttID</th>
-<th>Text</th>
-<th>Audio</th>
-</tr>
-</thead>
-
-<tbody>
-
-<tr class="d1">
-<td>Central (Bilaspur)</td>
-<td><code>IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500</code></td>
-<td>डायरेक्ट टेक्स हमेसा एक कोनो मनसे के ऊपर लगथे ओखर आवक के ऊपर</td>
-<td><audio controls preload="none" src="samples/ch/IISc_RESPIN_ch_D1_30014_495113_F_BANK_302760_30539500.mp3"></audio></td>
-</tr>
-
-<tr class="d2">
-<td>Eastern (Raigarh)</td>
-<td><code>IISc_RESPIN_ch_D2_30182_496001_M_BANK_309792_30082738</code></td>
-<td>एक खाता से दूसर खाता मे हमन यू.पी.आई से कैसे पैसा भेज सकत हन</td>
-<td><audio controls preload="none" src="samples/ch/IISc_RESPIN_ch_D2_30182_496001_M_BANK_309792_30082738.mp3"></audio></td>
-</tr>
-
-<tr class="d3">
-<td>Western/Budati/Khatahi (Kabeerdham)</td>
-<td><code>IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584</code></td>
-<td>कनकट्टा कीरा एक परकार के फसल काटे वाले कीरा हरय</td>
-<td><audio controls preload="none" src="samples/ch/IISc_RESPIN_ch_D3_30324_491995_M_AGRI_310273_30331584.mp3"></audio></td>
-</tr>
-
-<tr class="d4">
-<td>Northern/Bhandar (Sarguja)</td>
-<td><code>IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165</code></td>
-<td>गाँव कती कर किसान मन कर ढेटू मे हमेसा डोरा पाबेच करबे</td>
-<td><audio controls preload="none" src="samples/ch/IISc_RESPIN_ch_D4_30441_497333_M_AGRI_314750_30302165.mp3"></audio></td>
-</tr>
-
-</tbody>
-</table>
-
-</div>
-
-<!-- Repeat same structure for Kannada, Magahi, Maithili, Marathi, Telugu -->
 
 <script>
 
 function toggleLang(lang){
-
-let section=document.getElementById(lang);
+let section=document.getElementById(lang)
 
 if(section.style.display==="block")
-section.style.display="none";
+section.style.display="none"
 else
-section.style.display="block";
+section.style.display="block"
 
 }
 
