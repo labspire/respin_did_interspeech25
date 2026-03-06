@@ -14,17 +14,25 @@ margin:30px;
 background:#fafafa;
 }
 
+.language-grid {
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+gap:10px;
+margin-bottom:25px;
+}
+
 .language-btn {
-display:block;
-width:100%;
-padding:15px;
-margin-top:10px;
-font-size:18px;
+padding:12px;
+font-size:16px;
 border:none;
 border-radius:8px;
 background:#2c7be5;
 color:white;
 cursor:pointer;
+}
+
+.language-btn:hover {
+background:#1a68d1;
 }
 
 .lang-section {
@@ -69,12 +77,14 @@ width:260px;
 <h1>RESPIN DID – Dialect Examples</h1>
 <p>Short web-playable clips (MP3, 16 kHz mono). Use headphones.</p>
 
+<div class="language-grid">
+<button class="language-btn" onclick="toggleLang('bh')">Bhojpuri</button><button class="language-btn" onclick="toggleLang('bn')">Bengali</button><button class="language-btn" onclick="toggleLang('ch')">Chhattisgarhi</button><button class="language-btn" onclick="toggleLang('kn')">Kannada</button><button class="language-btn" onclick="toggleLang('mg')">Magahi</button><button class="language-btn" onclick="toggleLang('mr')">Marathi</button><button class="language-btn" onclick="toggleLang('mt')">Maithili</button><button class="language-btn" onclick="toggleLang('te')">Telugu</button>
+</div>
 
-<button class="language-btn" onclick="toggleLang('bh')">
-Bhojpuri
-</button>
 
 <div id="bh" class="lang-section">
+
+<h2>Bhojpuri</h2>
 
 <table>
 <thead>
@@ -184,11 +194,9 @@ Bhojpuri
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('bn')">
-Bengali
-</button>
-
 <div id="bn" class="lang-section">
+
+<h2>Bengali</h2>
 
 <table>
 <thead>
@@ -358,11 +366,9 @@ Bengali
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('ch')">
-Chhattisgarhi
-</button>
-
 <div id="ch" class="lang-section">
+
+<h2>Chhattisgarhi</h2>
 
 <table>
 <thead>
@@ -502,11 +508,9 @@ Chhattisgarhi
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('kn')">
-Kannada
-</button>
-
 <div id="kn" class="lang-section">
+
+<h2>Kannada</h2>
 
 <table>
 <thead>
@@ -676,11 +680,9 @@ Kannada
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('mg')">
-Magahi
-</button>
-
 <div id="mg" class="lang-section">
+
+<h2>Magahi</h2>
 
 <table>
 <thead>
@@ -820,11 +822,9 @@ Magahi
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('mr')">
-Marathi
-</button>
-
 <div id="mr" class="lang-section">
+
+<h2>Marathi</h2>
 
 <table>
 <thead>
@@ -964,11 +964,9 @@ Marathi
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('mt')">
-Maithili
-</button>
-
 <div id="mt" class="lang-section">
+
+<h2>Maithili</h2>
 
 <table>
 <thead>
@@ -1108,11 +1106,9 @@ Maithili
 
 </div>
 
-<button class="language-btn" onclick="toggleLang('te')">
-Telugu
-</button>
-
 <div id="te" class="lang-section">
+
+<h2>Telugu</h2>
 
 <table>
 <thead>
@@ -1256,13 +1252,16 @@ Telugu
 <script>
 
 function toggleLang(lang){
-let section=document.getElementById(lang)
+let sections=document.getElementsByClassName("lang-section")
 
-if(section.style.display==="block")
-section.style.display="none"
-else
+for(let s of sections) {
+s.style.display="none"
+}
+
+let section=document.getElementById(lang)
 section.style.display="block"
 
+window.scrollTo({top:section.offsetTop-20,behavior:"smooth"})
 }
 
 </script>
